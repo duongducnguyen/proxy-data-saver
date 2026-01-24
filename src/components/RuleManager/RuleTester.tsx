@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../i18n';
 
 interface Rule {
   id: string;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function RuleTester({ onTest, rules }: Props) {
+  const { t } = useTranslation();
   const [hostname, setHostname] = useState('');
   const [results, setResults] = useState<{ rule: Rule; matches: boolean }[] | null>(null);
   const [testing, setTesting] = useState(false);
@@ -40,13 +42,13 @@ export function RuleTester({ onTest, rules }: Props) {
 
   return (
     <div className="bg-gray-900 rounded-lg p-4 border border-gray-700 space-y-4">
-      <h3 className="font-medium text-white">Test Hostname Against Rules</h3>
+      <h3 className="font-medium text-white">{t('rules.tester.title')}</h3>
 
       <div className="flex gap-2">
         <input
           type="text"
           className="input flex-1"
-          placeholder="Enter hostname to test (e.g., www.google.com)"
+          placeholder={t('rules.tester.hostnamePlaceholder')}
           value={hostname}
           onChange={(e) => setHostname(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleTest()}
@@ -56,7 +58,7 @@ export function RuleTester({ onTest, rules }: Props) {
           disabled={!hostname || testing}
           className="btn btn-primary"
         >
-          {testing ? 'Testing...' : 'Test'}
+          {testing ? t('rules.tester.testing') : t('rules.tester.test')}
         </button>
       </div>
 
@@ -66,20 +68,20 @@ export function RuleTester({ onTest, rules }: Props) {
             <span className="font-medium">
               {matchingRule ? (
                 <>
-                  Matched: <span className="text-blue-300">{matchingRule.name}</span>
+                  {t('rules.tester.matchedRule')}: <span className="text-blue-300">{matchingRule.name}</span>
                   {' '}&rarr;{' '}
                   <span className={matchingRule.action === 'proxy' ? 'text-blue-400' : 'text-green-400'}>
-                    {matchingRule.action === 'proxy' ? 'Use Proxy' : 'Direct Connection'}
+                    {matchingRule.action === 'proxy' ? t('rules.tester.action.proxy') : t('rules.tester.action.direct')}
                   </span>
                 </>
               ) : (
-                <span className="text-yellow-300">No rule matched - will use default action</span>
+                <span className="text-yellow-300">{t('rules.tester.noMatch')}</span>
               )}
             </span>
           </div>
 
           <div className="text-sm">
-            <div className="text-gray-400 mb-2">Rule evaluation:</div>
+            <div className="text-gray-400 mb-2">{t('rules.tester.result')}:</div>
             <div className="space-y-1">
               {results.map(({ rule, matches }) => (
                 <div

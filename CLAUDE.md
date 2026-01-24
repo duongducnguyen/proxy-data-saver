@@ -22,6 +22,7 @@
 | Proxy Server | Custom implementation với SNI extraction |
 | Pattern Matching | wildcard-match |
 | Storage | electron-store |
+| i18n | Custom React Context (English/Vietnamese) |
 
 ---
 
@@ -79,6 +80,11 @@ proxy-data-saver/
 │   │   ├── ProxyConfig/          # Cấu hình proxy (multi-proxy input)
 │   │   ├── RuleManager/          # CRUD rules
 │   │   └── TrafficMonitor/       # Real-time traffic logs
+│   ├── i18n/                     # Internationalization
+│   │   ├── index.tsx             # I18nProvider, useI18n, useTranslation
+│   │   └── locales/
+│   │       ├── en.ts             # English translations
+│   │       └── vi.ts             # Vietnamese translations
 │   └── hooks/
 │       ├── useProxy.ts           # Proxy state management
 │       ├── useRules.ts           # Rules state management
@@ -274,3 +280,4 @@ Nếu port đã được dùng (Docker, etc.), app sẽ fail. User cần đổi 
 - **v1.0.0**: Initial release với proxy-chain
 - **v1.1.0**: Multi-proxy support
 - **v1.2.0**: SNI Extraction thay thế Reverse DNS
+- **v1.3.0**: Internationalization (i18n) - English/Vietnamese support, improved UI layout

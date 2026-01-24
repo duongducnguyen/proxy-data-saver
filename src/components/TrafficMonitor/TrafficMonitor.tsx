@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from '../../i18n';
 
 interface TrafficLog {
   id: string;
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats }: Props) {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<'all' | 'proxy' | 'direct'>('all');
   const [search, setSearch] = useState('');
 
@@ -52,46 +54,49 @@ export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats }: 
   };
 
   return (
-    <div className="card space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-white">Traffic Monitor</h2>
+    <div className="h-full flex flex-col card">
+      {/* Header */}
+      <div className="flex-shrink-0 flex items-center justify-between pb-4 border-b border-gray-700">
+        <h2 className="text-xl font-bold text-white">{t('traffic.title')}</h2>
         <div className="flex gap-2">
           <button
             onClick={onTogglePause}
             className={`btn ${paused ? 'btn-success' : 'btn-secondary'}`}
           >
-            {paused ? 'Resume' : 'Pause'}
+            {paused ? t('traffic.resume') : t('traffic.pause')}
           </button>
           <button onClick={onClear} className="btn btn-danger">
-            Clear
+            {t('traffic.clear')}
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-900 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-white">{stats.total}</div>
-          <div className="text-xs text-gray-500">Total Requests</div>
+      {/* Stats */}
+      <div className="flex-shrink-0 grid grid-cols-4 gap-3 mt-4">
+        <div className="bg-gray-900 rounded-lg p-2 text-center">
+          <div className="text-xl font-bold text-white">{stats.total}</div>
+          <div className="text-xs text-gray-500">{t('traffic.stats.total')}</div>
         </div>
-        <div className="bg-gray-900 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-blue-400">{stats.proxy}</div>
-          <div className="text-xs text-gray-500">Via Proxy</div>
+        <div className="bg-gray-900 rounded-lg p-2 text-center">
+          <div className="text-xl font-bold text-blue-400">{stats.proxy}</div>
+          <div className="text-xs text-gray-500">{t('traffic.stats.proxy')}</div>
         </div>
-        <div className="bg-gray-900 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-green-400">{stats.direct}</div>
-          <div className="text-xs text-gray-500">Direct</div>
+        <div className="bg-gray-900 rounded-lg p-2 text-center">
+          <div className="text-xl font-bold text-green-400">{stats.direct}</div>
+          <div className="text-xs text-gray-500">{t('traffic.stats.direct')}</div>
         </div>
-        <div className="bg-gray-900 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-purple-400">{stats.uniqueHosts}</div>
-          <div className="text-xs text-gray-500">Unique Hosts</div>
+        <div className="bg-gray-900 rounded-lg p-2 text-center">
+          <div className="text-xl font-bold text-purple-400">{stats.uniqueHosts}</div>
+          <div className="text-xs text-gray-500">{t('traffic.stats.hosts')}</div>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      {/* Filters */}
+      <div className="flex-shrink-0 flex flex-wrap gap-2 mt-4">
         <input
           type="text"
           className="input flex-1 min-w-[200px]"
-          placeholder="Filter by hostname..."
+          placeholder={t('traffic.filter.placeholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -106,28 +111,30 @@ export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats }: 
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
               }`}
             >
-              {f === 'all' ? 'All' : f === 'proxy' ? 'Proxy' : 'Direct'}
+              {f === 'all' ? t('traffic.filter.all') : f === 'proxy' ? t('traffic.filter.proxy') : t('traffic.filter.direct')}
             </button>
           ))}
         </div>
       </div>
 
+      {/* Paused Warning */}
       {paused && (
-        <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-3 text-center text-yellow-300">
-          Traffic monitoring is paused. Click Resume to continue.
+        <div className="flex-shrink-0 mt-4 bg-yellow-900/30 border border-yellow-700 rounded-lg p-2 text-center text-yellow-300 text-sm">
+          {t('traffic.paused')}
         </div>
       )}
 
-      <div className="bg-gray-900 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
+      {/* Table - Scrollable */}
+      <div className="flex-1 overflow-hidden mt-4 bg-gray-900 rounded-lg">
+        <div className="h-full overflow-y-auto">
           <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-800 text-gray-400 text-left">
-                <th className="px-4 py-3 font-medium">Time</th>
-                <th className="px-4 py-3 font-medium">Method</th>
-                <th className="px-4 py-3 font-medium">SNI / Hostname</th>
-                <th className="px-4 py-3 font-medium">Action</th>
-                <th className="px-4 py-3 font-medium">Rule</th>
+            <thead className="sticky top-0 bg-gray-800">
+              <tr className="text-gray-400 text-left">
+                <th className="px-4 py-3 font-medium">{t('traffic.table.time')}</th>
+                <th className="px-4 py-3 font-medium">{t('traffic.table.method')}</th>
+                <th className="px-4 py-3 font-medium">{t('traffic.table.hostname')}</th>
+                <th className="px-4 py-3 font-medium">{t('traffic.table.action')}</th>
+                <th className="px-4 py-3 font-medium">{t('traffic.table.rule')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
@@ -135,8 +142,8 @@ export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats }: 
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
                     {logs.length === 0
-                      ? 'No traffic yet. Start the proxy and make some requests.'
-                      : 'No matching traffic found.'}
+                      ? t('traffic.noTraffic')
+                      : t('traffic.noMatch')}
                   </td>
                 </tr>
               ) : (
@@ -174,7 +181,7 @@ export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats }: 
                             : 'bg-green-900 text-green-300'
                         }`}
                       >
-                        {log.action === 'proxy' ? 'Proxy' : 'Direct'}
+                        {log.action === 'proxy' ? t('traffic.filter.proxy') : t('traffic.filter.direct')}
                       </span>
                     </td>
                     <td className="px-4 py-2 text-gray-400 text-xs truncate max-w-[150px]">
@@ -186,12 +193,14 @@ export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats }: 
             </tbody>
           </table>
         </div>
-        {filteredLogs.length > 100 && (
-          <div className="px-4 py-2 text-center text-gray-500 text-sm bg-gray-800/50">
-            Showing 100 of {filteredLogs.length} entries
-          </div>
-        )}
       </div>
+
+      {/* Footer */}
+      {filteredLogs.length > 100 && (
+        <div className="flex-shrink-0 mt-2 text-center text-gray-500 text-xs">
+          {t('traffic.showing').replace('{count}', '100').replace('{total}', String(filteredLogs.length))}
+        </div>
+      )}
     </div>
   );
 }

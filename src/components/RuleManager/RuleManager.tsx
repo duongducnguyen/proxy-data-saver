@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { RuleEditor } from './RuleEditor';
 import { RuleItem } from './RuleItem';
 import { RuleTester } from './RuleTester';
+import { useTranslation } from '../../i18n';
 
 interface Rule {
   id: string;
@@ -37,6 +38,7 @@ export function RuleManager({
   onValidatePattern,
   onClearError
 }: Props) {
+  const { t } = useTranslation();
   const [showEditor, setShowEditor] = useState(false);
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showTester, setShowTester] = useState(false);
@@ -82,74 +84,86 @@ export function RuleManager({
 
   if (loading) {
     return (
-      <div className="card">
-        <div className="text-center text-gray-400 py-8">Loading rules...</div>
+      <div className="h-full flex items-center justify-center card">
+        <div className="text-center text-gray-400">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="card space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-white">Routing Rules</h2>
+    <div className="h-full flex flex-col card">
+      {/* Header */}
+      <div className="flex-shrink-0 flex items-center justify-between pb-4 border-b border-gray-700">
+        <h2 className="text-xl font-bold text-white">{t('rules.title')}</h2>
         <div className="flex gap-2">
           <button onClick={() => setShowTester(!showTester)} className="btn btn-secondary">
-            {showTester ? 'Hide Tester' : 'Test Rules'}
+            {showTester ? t('rules.hideTester') : t('rules.testRules')}
           </button>
           <button onClick={handleAddNew} className="btn btn-primary">
-            Add Rule
+            {t('rules.addRule')}
           </button>
         </div>
       </div>
 
+      {/* Error */}
       {error && (
-        <div className="bg-red-900/50 border border-red-700 rounded-lg p-4 flex justify-between items-center">
+        <div className="flex-shrink-0 mt-4 bg-red-900/50 border border-red-700 rounded-lg p-4 flex justify-between items-center">
           <span className="text-red-300">{error}</span>
           <button onClick={onClearError} className="text-red-400 hover:text-red-300">
-            Dismiss
+            {t('rules.dismiss')}
           </button>
         </div>
       )}
 
+      {/* Tester */}
       {showTester && (
-        <RuleTester onTest={onTestRule} rules={rules} />
+        <div className="flex-shrink-0 mt-4">
+          <RuleTester onTest={onTestRule} rules={rules} />
+        </div>
       )}
 
+      {/* Editor */}
       {showEditor && (
-        <RuleEditor
-          rule={editingRule}
-          existingPriorities={rules.map((r) => r.priority)}
-          onSave={handleSave}
-          onCancel={handleCancel}
-          onValidate={onValidatePattern}
-        />
+        <div className="flex-shrink-0 mt-4">
+          <RuleEditor
+            rule={editingRule}
+            existingPriorities={rules.map((r) => r.priority)}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            onValidate={onValidatePattern}
+          />
+        </div>
       )}
 
-      <div className="text-sm text-gray-500 mb-2">
-        Rules are evaluated in order. First matching rule wins.
+      {/* Info */}
+      <div className="flex-shrink-0 text-sm text-gray-500 mt-4 mb-2">
+        {t('rules.rulesInfo')}
       </div>
 
-      {rules.length === 0 ? (
-        <div className="text-center text-gray-500 py-8 bg-gray-900 rounded-lg">
-          No rules configured. Add a rule to get started.
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {rules.map((rule, index) => (
-            <RuleItem
-              key={rule.id}
-              rule={rule}
-              index={index}
-              total={rules.length}
-              onEdit={() => handleEdit(rule)}
-              onDelete={() => onDeleteRule(rule.id)}
-              onToggle={(enabled) => onUpdateRule(rule.id, { enabled })}
-              onMoveUp={() => handleMoveUp(index)}
-              onMoveDown={() => handleMoveDown(index)}
-            />
-          ))}
-        </div>
-      )}
+      {/* Rules List - Scrollable */}
+      <div className="flex-1 overflow-y-auto">
+        {rules.length === 0 ? (
+          <div className="text-center text-gray-500 py-8 bg-gray-900 rounded-lg">
+            {t('rules.noRules')}
+          </div>
+        ) : (
+          <div className="space-y-2 pr-1">
+            {rules.map((rule, index) => (
+              <RuleItem
+                key={rule.id}
+                rule={rule}
+                index={index}
+                total={rules.length}
+                onEdit={() => handleEdit(rule)}
+                onDelete={() => onDeleteRule(rule.id)}
+                onToggle={(enabled) => onUpdateRule(rule.id, { enabled })}
+                onMoveUp={() => handleMoveUp(index)}
+                onMoveDown={() => handleMoveDown(index)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

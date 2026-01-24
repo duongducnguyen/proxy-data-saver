@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../i18n';
 
 interface Rule {
   id: string;
@@ -30,6 +31,8 @@ export function RuleItem({
   onMoveUp,
   onMoveDown
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <div
       className={`flex items-center gap-4 p-4 rounded-lg border transition-colors ${
@@ -43,7 +46,7 @@ export function RuleItem({
           onClick={onMoveUp}
           disabled={index === 0}
           className="text-gray-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
-          title="Move up"
+          title={t('rules.item.moveUp')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -53,7 +56,7 @@ export function RuleItem({
           onClick={onMoveDown}
           disabled={index === total - 1}
           className="text-gray-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
-          title="Move down"
+          title={t('rules.item.moveDown')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -80,7 +83,7 @@ export function RuleItem({
                 : 'bg-green-900 text-green-300'
             }`}
           >
-            {rule.action === 'proxy' ? 'Proxy' : 'Direct'}
+            {rule.action === 'proxy' ? t('rules.item.proxy') : t('rules.item.direct')}
           </span>
         </div>
         <code className="text-sm text-gray-400 truncate block">{rule.pattern}</code>
@@ -90,7 +93,7 @@ export function RuleItem({
         <button
           onClick={onEdit}
           className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded"
-          title="Edit"
+          title={t('rules.item.edit')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -104,7 +107,7 @@ export function RuleItem({
         <button
           onClick={onDelete}
           className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded"
-          title="Delete"
+          title={t('rules.item.delete')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
