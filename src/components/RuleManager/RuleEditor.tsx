@@ -18,10 +18,22 @@ interface Props {
   onValidate: (pattern: string) => Promise<{ valid: boolean; error?: string }>;
 }
 
+// Convert comma-separated pattern to newline-separated for display
+function patternToLines(pattern: string): string {
+  if (!pattern) return '';
+  return pattern.split(',').map(p => p.trim()).filter(Boolean).join('\n');
+}
+
+// Convert newline-separated pattern to comma-separated for storage
+function linesToPattern(lines: string): string {
+  if (!lines) return '';
+  return lines.split('\n').map(l => l.trim()).filter(Boolean).join(', ');
+}
+
 export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValidate }: Props) {
   const { t } = useTranslation();
   const [name, setName] = useState(rule?.name || '');
-  const [pattern, setPattern] = useState(rule?.pattern || '');
+  const [pattern, setPattern] = useState(patternToLines(rule?.pattern || ''));
   const [action, setAction] = useState<'proxy' | 'direct'>(rule?.action || 'proxy');
   const [enabled, setEnabled] = useState(rule?.enabled ?? true);
   const [priority, setPriority] = useState(rule?.priority || getNextPriority());
@@ -40,7 +52,8 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
         return;
       }
       setValidating(true);
-      const result = await onValidate(pattern);
+      // Convert newlines to comma for validation
+      const result = await onValidate(linesToPattern(pattern));
       setPatternError(result.valid ? null : result.error || t('rules.form.patternInvalid'));
       setValidating(false);
     };
@@ -55,7 +68,7 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
 
     onSave({
       name,
-      pattern,
+      pattern: linesToPattern(pattern),
       action,
       enabled,
       priority
@@ -97,9 +110,8 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
 
         <div className="md:col-span-2">
           <label className="label">{t('rules.form.pattern')}</label>
-          <input
-            type="text"
-            className={`input ${patternError ? 'border-red-500 focus:ring-red-500' : ''}`}
+          <textarea
+            className={`input min-h-[120px] resize-y font-mono text-sm ${patternError ? 'border-red-500 focus:ring-red-500' : ''}`}
             placeholder={t('rules.form.patternPlaceholder')}
             value={pattern}
             onChange={(e) => setPattern(e.target.value)}

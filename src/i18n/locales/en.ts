@@ -81,8 +81,11 @@ hostname:port`,
       name: 'Name',
       namePlaceholder: 'e.g., Block Ads',
       pattern: 'Pattern',
-      patternPlaceholder: 'e.g., *.google.com, *.youtube.com',
-      patternHint: 'Use * as wildcard. Separate multiple patterns with comma.',
+      patternPlaceholder: `Enter patterns, one per line:
+*.google.com
+*.youtube.com
+*.facebook.com`,
+      patternHint: 'Use * as wildcard. One pattern per line.',
       action: 'Action',
       useProxy: 'Use Proxy',
       directConnection: 'Direct Connection',

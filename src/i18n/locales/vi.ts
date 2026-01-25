@@ -81,8 +81,11 @@ hostname:port`,
       name: 'Tên',
       namePlaceholder: 'VD: Chặn quảng cáo',
       pattern: 'Mẫu',
-      patternPlaceholder: 'VD: *.google.com, *.youtube.com',
-      patternHint: 'Dùng * làm ký tự đại diện. Phân cách nhiều mẫu bằng dấu phẩy.',
+      patternPlaceholder: `Nhập mẫu, mỗi dòng một mẫu:
+*.google.com
+*.youtube.com
+*.facebook.com`,
+      patternHint: 'Dùng * làm ký tự đại diện. Mỗi mẫu một dòng.',
       action: 'Hành động',
       useProxy: 'Dùng Proxy',
       directConnection: 'Kết nối trực tiếp',
