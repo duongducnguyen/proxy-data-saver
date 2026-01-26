@@ -2,7 +2,8 @@ import { networkInterfaces } from 'os';
 import { EventEmitter } from 'events';
 import { ruleEngine } from './rule-engine';
 import { SNIProxyServer, TrafficLogData } from './sni-proxy-server';
-import { ProxyStatus, TrafficLog, ProxyConfig, ProxyEntry, Rule, parseProxyList, buildUpstreamUrl } from './types';
+import { ProxyStatus, TrafficLog, ProxyConfig, ProxyEntry, Rule, AggregatedStats, DomainStats, parseProxyList, buildUpstreamUrl } from './types';
+import { statsManager, StatsDelta } from './stats-manager';
 
 interface ServerInstance {
   server: SNIProxyServer;
@@ -18,6 +19,15 @@ export class ProxyServerManager extends EventEmitter {
 
   constructor() {
     super();
+
+    // Forward stats delta events
+    statsManager.on('delta', (delta: StatsDelta) => {
+      this.emit('stats-delta', delta);
+    });
+
+    statsManager.on('reset', () => {
+      this.emit('stats-reset');
+    });
   }
 
   getLocalIps(): string[] {
@@ -52,55 +62,93 @@ export class ProxyServerManager extends EventEmitter {
       throw new Error('No valid proxies found. Please enter at least one proxy.');
     }
 
-    const startPromises = this.proxies.map(async (entry) => {
-      try {
-        const upstreamUrl = buildUpstreamUrl(entry);
+    // Track used ports to avoid duplicates
+    const usedPorts = new Set<number>();
+    const maxRetries = 100; // Max ports to try per proxy
 
-        const server = new SNIProxyServer({
-          port: entry.localPort,
-          host: '0.0.0.0',
-          upstreamProxyUrl: upstreamUrl,
-          onRequest: ({ hostname, sniHostname, method }) => {
-            // Use SNI hostname for rule matching if available
-            const effectiveHostname = sniHostname || hostname;
-            const { action, matchedRule } = ruleEngine.match(effectiveHostname);
-            return { action, matchedRule: matchedRule?.name || null };
+    // Start proxies sequentially to properly handle port conflicts
+    const results: { success: boolean; entry: ProxyEntry; error?: unknown }[] = [];
+
+    for (const entry of this.proxies) {
+      let currentPort = entry.localPort;
+      let started = false;
+      let lastError: unknown = null;
+
+      // Find an available port by trying to start the server
+      for (let retry = 0; retry < maxRetries && !started; retry++) {
+        // Skip ports already used by other proxies in this session
+        while (usedPorts.has(currentPort)) {
+          currentPort++;
+        }
+
+        try {
+          const upstreamUrl = buildUpstreamUrl(entry);
+
+          const server = new SNIProxyServer({
+            port: currentPort,
+            host: '0.0.0.0',
+            upstreamProxyUrl: upstreamUrl,
+            onRequest: ({ hostname, sniHostname }) => {
+              const effectiveHostname = sniHostname || hostname;
+              const { action, matchedRule } = ruleEngine.match(effectiveHostname);
+              return { action, matchedRule: matchedRule?.name || null };
+            }
+          });
+
+          server.on('traffic', (data: TrafficLogData) => {
+            const log: TrafficLog = {
+              id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              timestamp: Date.now(),
+              hostname: data.hostname,
+              resolvedHostname: data.sniHostname,
+              method: data.method,
+              url: `${data.hostname}:${data.port}`,
+              action: data.action,
+              matchedRule: data.matchedRule,
+              localPort: entry.localPort,
+              bytesIn: data.bytesIn,
+              bytesOut: data.bytesOut
+            };
+
+            this.addTrafficLog(log);
+            statsManager.recordTraffic(log);
+            this.emit('traffic', log);
+          });
+
+          server.on('error', (error: Error) => {
+            this.emit('error', { localPort: entry.localPort, error: error.message });
+          });
+
+          await server.start();
+
+          // Success! Update entry with actual port used
+          entry.localPort = currentPort;
+          entry.running = true;
+          usedPorts.add(currentPort);
+          this.servers.set(currentPort, { server, entry });
+          started = true;
+          results.push({ success: true, entry });
+
+        } catch (err: unknown) {
+          lastError = err;
+          const errorMessage = err instanceof Error ? err.message : String(err);
+          // If port is in use, try next port
+          if (errorMessage.includes('EADDRINUSE') || errorMessage.includes('address already in use')) {
+            console.log(`Port ${currentPort} in use, trying next...`);
+            currentPort++;
+          } else {
+            // Other error, stop retrying
+            break;
           }
-        });
-
-        server.on('traffic', (data: TrafficLogData) => {
-          const log: TrafficLog = {
-            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            timestamp: Date.now(),
-            hostname: data.hostname,
-            resolvedHostname: data.sniHostname, // Now this is SNI hostname
-            method: data.method,
-            url: `${data.hostname}:${data.port}`,
-            action: data.action,
-            matchedRule: data.matchedRule,
-            localPort: entry.localPort
-          };
-
-          this.addTrafficLog(log);
-          this.emit('traffic', log);
-        });
-
-        server.on('error', (error: Error) => {
-          this.emit('error', { localPort: entry.localPort, error: error.message });
-        });
-
-        await server.start();
-        entry.running = true;
-        this.servers.set(entry.localPort, { server, entry });
-
-        return { success: true, entry };
-      } catch (err) {
-        entry.running = false;
-        return { success: false, entry, error: err };
+        }
       }
-    });
 
-    const results = await Promise.all(startPromises);
+      if (!started) {
+        entry.running = false;
+        results.push({ success: false, entry, error: lastError });
+        console.error(`Failed to start proxy ${entry.host}:${entry.port} after ${maxRetries} retries`);
+      }
+    }
 
     const successCount = results.filter(r => r.success).length;
     if (successCount === 0) {
@@ -175,6 +223,28 @@ export class ProxyServerManager extends EventEmitter {
 
   validatePattern(pattern: string): { valid: boolean; error?: string } {
     return ruleEngine.validatePattern(pattern);
+  }
+
+  // Stats methods
+  getStats(period: 'today' | 'week' | 'month' | 'all', localPort?: number): AggregatedStats {
+    return statsManager.getStats(period, localPort);
+  }
+
+  getTopDomains(period: 'today' | 'week' | 'month' | 'all', limit: number = 10, localPort?: number): DomainStats[] {
+    return statsManager.getTopDomains(period, limit, localPort);
+  }
+
+  getActiveProxyPorts(): number[] {
+    return statsManager.getActiveProxyPorts();
+  }
+
+  resetStats(): void {
+    statsManager.resetStats();
+    // 'stats-reset' event is emitted by statsManager and forwarded in constructor
+  }
+
+  getSessionStats(): { totalBytes: number; proxyBytes: number; directBytes: number; requestCount: number } {
+    return statsManager.getSessionStats();
   }
 }
 

@@ -9,6 +9,7 @@ interface TrafficLog {
   url: string;
   action: 'proxy' | 'direct';
   matchedRule: string | null;
+  localPort: number;
 }
 
 const isElectron = typeof window !== 'undefined' && window.electronAPI;

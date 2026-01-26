@@ -6,8 +6,44 @@
 import * as net from 'net';
 import * as http from 'http';
 import { URL } from 'url';
+import { Transform } from 'stream';
 import { parseSNI, isTLSClientHello } from './sni-parser';
 import { EventEmitter } from 'events';
+
+// Byte counter for tracking data transfer
+class ByteCounter {
+  bytesIn = 0;
+  bytesOut = 0;
+  private onComplete: ((bytesIn: number, bytesOut: number) => void) | null = null;
+
+  setOnComplete(callback: (bytesIn: number, bytesOut: number) => void): void {
+    this.onComplete = callback;
+  }
+
+  complete(): void {
+    if (this.onComplete) {
+      this.onComplete(this.bytesIn, this.bytesOut);
+    }
+  }
+
+  createInCounter(): Transform {
+    return new Transform({
+      transform: (chunk, _encoding, callback) => {
+        this.bytesIn += chunk.length;
+        callback(null, chunk);
+      }
+    });
+  }
+
+  createOutCounter(): Transform {
+    return new Transform({
+      transform: (chunk, _encoding, callback) => {
+        this.bytesOut += chunk.length;
+        callback(null, chunk);
+      }
+    });
+  }
+}
 
 export interface ProxyServerOptions {
   port: number;
@@ -36,6 +72,8 @@ export interface TrafficLogData {
   method: string;
   action: 'proxy' | 'direct';
   matchedRule: string | null;
+  bytesIn: number;
+  bytesOut: number;
 }
 
 export class SNIProxyServer extends EventEmitter {
@@ -127,19 +165,25 @@ export class SNIProxyServer extends EventEmitter {
 
     const decision = this.options.onRequest(requestInfo);
 
-    this.emit('traffic', {
-      hostname,
-      sniHostname: null,
-      port,
-      method: req.method || 'GET',
-      action: decision.action,
-      matchedRule: decision.matchedRule
-    } as TrafficLogData);
+    // Create byte counter for this request
+    const counter = new ByteCounter();
+    counter.setOnComplete((bytesIn, bytesOut) => {
+      this.emit('traffic', {
+        hostname,
+        sniHostname: null,
+        port,
+        method: req.method || 'GET',
+        action: decision.action,
+        matchedRule: decision.matchedRule,
+        bytesIn,
+        bytesOut
+      } as TrafficLogData);
+    });
 
     if (decision.action === 'proxy' && this.options.upstreamProxyUrl) {
-      this.forwardHttpViaProxy(req, res, hostname, port, path);
+      this.forwardHttpViaProxy(req, res, hostname, port, path, counter);
     } else {
-      this.forwardHttpDirect(req, res, hostname, port, path);
+      this.forwardHttpDirect(req, res, hostname, port, path, counter);
     }
   }
 
@@ -148,7 +192,8 @@ export class SNIProxyServer extends EventEmitter {
     res: http.ServerResponse,
     hostname: string,
     port: number,
-    path: string
+    path: string,
+    counter: ByteCounter
   ): void {
     const options: http.RequestOptions = {
       hostname,
@@ -162,15 +207,19 @@ export class SNIProxyServer extends EventEmitter {
 
     const proxyReq = http.request(options, (proxyRes) => {
       res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
-      proxyRes.pipe(res);
+      proxyRes.pipe(counter.createInCounter()).pipe(res);
     });
 
-    proxyReq.on('error', (err) => {
+    proxyReq.on('error', () => {
+      counter.complete();
       res.writeHead(502);
       res.end('Bad Gateway');
     });
 
-    req.pipe(proxyReq);
+    res.on('finish', () => counter.complete());
+    res.on('close', () => counter.complete());
+
+    req.pipe(counter.createOutCounter()).pipe(proxyReq);
   }
 
   private forwardHttpViaProxy(
@@ -178,7 +227,8 @@ export class SNIProxyServer extends EventEmitter {
     res: http.ServerResponse,
     hostname: string,
     port: number,
-    path: string
+    path: string,
+    counter: ByteCounter
   ): void {
     const proxyUrl = new URL(this.options.upstreamProxyUrl!);
     const options: http.RequestOptions = {
@@ -197,15 +247,19 @@ export class SNIProxyServer extends EventEmitter {
 
     const proxyReq = http.request(options, (proxyRes) => {
       res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
-      proxyRes.pipe(res);
+      proxyRes.pipe(counter.createInCounter()).pipe(res);
     });
 
-    proxyReq.on('error', (err) => {
+    proxyReq.on('error', () => {
+      counter.complete();
       res.writeHead(502);
       res.end('Bad Gateway');
     });
 
-    req.pipe(proxyReq);
+    res.on('finish', () => counter.complete());
+    res.on('close', () => counter.complete());
+
+    req.pipe(counter.createOutCounter()).pipe(proxyReq);
   }
 
   private handleConnectRequest(
@@ -306,19 +360,28 @@ export class SNIProxyServer extends EventEmitter {
 
     const decision = this.options.onRequest(requestInfo);
 
-    this.emit('traffic', {
-      hostname: connectHostname,
-      sniHostname,
-      port,
-      method: 'CONNECT',
-      action: decision.action,
-      matchedRule: decision.matchedRule
-    } as TrafficLogData);
+    // Create byte counter for this tunnel
+    const counter = new ByteCounter();
+    counter.setOnComplete((bytesIn, bytesOut) => {
+      this.emit('traffic', {
+        hostname: connectHostname,
+        sniHostname,
+        port,
+        method: 'CONNECT',
+        action: decision.action,
+        matchedRule: decision.matchedRule,
+        bytesIn,
+        bytesOut
+      } as TrafficLogData);
+    });
+
+    // Count initial data as outbound
+    counter.bytesOut += initialData.length;
 
     if (decision.action === 'proxy' && this.options.upstreamProxyUrl) {
-      this.tunnelViaProxy(clientSocket, initialData, connectHostname, port);
+      this.tunnelViaProxy(clientSocket, initialData, connectHostname, port, counter);
     } else {
-      this.tunnelDirect(clientSocket, initialData, effectiveHostname, port);
+      this.tunnelDirect(clientSocket, initialData, effectiveHostname, port, counter);
     }
   }
 
@@ -326,7 +389,8 @@ export class SNIProxyServer extends EventEmitter {
     clientSocket: net.Socket,
     initialData: Buffer,
     hostname: string,
-    port: number
+    port: number,
+    counter: ByteCounter
   ): void {
     const serverSocket = net.connect(port, hostname, () => {
       // Send initial data (ClientHello) that we buffered
@@ -334,18 +398,23 @@ export class SNIProxyServer extends EventEmitter {
         serverSocket.write(initialData);
       }
 
-      // Pipe bidirectionally
-      clientSocket.pipe(serverSocket);
-      serverSocket.pipe(clientSocket);
+      // Pipe bidirectionally with byte counting
+      clientSocket.pipe(counter.createOutCounter()).pipe(serverSocket);
+      serverSocket.pipe(counter.createInCounter()).pipe(clientSocket);
     });
 
-    serverSocket.on('error', (err) => {
+    serverSocket.on('error', () => {
+      counter.complete();
       clientSocket.destroy();
     });
 
     clientSocket.on('error', () => {
+      counter.complete();
       serverSocket.destroy();
     });
+
+    clientSocket.on('close', () => counter.complete());
+    serverSocket.on('close', () => counter.complete());
 
     this.connections.add(serverSocket);
     serverSocket.on('close', () => this.connections.delete(serverSocket));
@@ -355,7 +424,8 @@ export class SNIProxyServer extends EventEmitter {
     clientSocket: net.Socket,
     initialData: Buffer,
     hostname: string,
-    port: number
+    port: number,
+    counter: ByteCounter
   ): void {
     const proxyUrl = new URL(this.options.upstreamProxyUrl!);
     const proxyHost = proxyUrl.hostname;
@@ -395,17 +465,19 @@ export class SNIProxyServer extends EventEmitter {
               proxySocket.write(initialData);
             }
 
-            // Pipe bidirectionally
-            clientSocket.pipe(proxySocket);
-            proxySocket.pipe(clientSocket);
+            // Pipe bidirectionally with byte counting
+            clientSocket.pipe(counter.createOutCounter()).pipe(proxySocket);
+            proxySocket.pipe(counter.createInCounter()).pipe(clientSocket);
 
             // Handle any data after headers
             const remaining = responseBuffer.slice(headerEnd + 4);
             if (remaining.length > 0) {
+              counter.bytesIn += remaining.length;
               clientSocket.write(remaining);
             }
           } else {
             // Proxy rejected the connection
+            counter.complete();
             clientSocket.destroy();
             proxySocket.destroy();
           }
@@ -413,13 +485,18 @@ export class SNIProxyServer extends EventEmitter {
       }
     });
 
-    proxySocket.on('error', (err) => {
+    proxySocket.on('error', () => {
+      counter.complete();
       clientSocket.destroy();
     });
 
     clientSocket.on('error', () => {
+      counter.complete();
       proxySocket.destroy();
     });
+
+    clientSocket.on('close', () => counter.complete());
+    proxySocket.on('close', () => counter.complete());
 
     this.connections.add(proxySocket);
     proxySocket.on('close', () => this.connections.delete(proxySocket));

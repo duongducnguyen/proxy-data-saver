@@ -1,5 +1,11 @@
 # Proxy Data Saver - Claude Code Guide
 
+## Claude Code Rules
+
+- **Không thêm Co-Author**: Khi commit, KHÔNG thêm dòng `Co-Authored-By: Claude` vào commit message.
+
+---
+
 ## Tổng quan dự án
 
 **Proxy Data Saver** là ứng dụng Electron tạo local proxy server với khả năng routing có điều kiện:
@@ -65,9 +71,10 @@ proxy-data-saver/
 ├── electron/
 │   ├── main/
 │   │   ├── index.ts              # Entry point, window & tray management
-│   │   ├── sni-proxy-server.ts   # Custom proxy server với SNI extraction
+│   │   ├── sni-proxy-server.ts   # Custom proxy server với SNI extraction + byte counting
 │   │   ├── sni-parser.ts         # TLS ClientHello parser
 │   │   ├── proxy-server.ts       # ProxyServerManager (quản lý multiple proxies)
+│   │   ├── stats-manager.ts      # Stats tracking với batched delta updates
 │   │   ├── rule-engine.ts        # Rule matching với wildcard-match
 │   │   ├── config-store.ts       # Electron-store wrapper
 │   │   ├── ipc-handlers.ts       # IPC handlers cho renderer
@@ -75,8 +82,14 @@ proxy-data-saver/
 │   └── preload/
 │       └── index.ts              # contextBridge API cho renderer
 ├── src/                          # React UI
-│   ├── App.tsx                   # Main app với tabs
+│   ├── App.tsx                   # Main app với tabs + custom titlebar
 │   ├── components/
+│   │   ├── Dashboard/            # Dashboard với stats tracking
+│   │   │   ├── Dashboard.tsx     # Main container với proxy filter
+│   │   │   ├── StatsCards.tsx    # Stat cards (Total, Proxy, Direct, Savings)
+│   │   │   ├── PeriodSelector.tsx# Period buttons (Today/Week/Month/All)
+│   │   │   ├── TopDomains.tsx    # Top domains table
+│   │   │   └── DataChart.tsx     # Donut chart visualization
 │   │   ├── ProxyConfig/          # Cấu hình proxy (multi-proxy input)
 │   │   ├── RuleManager/          # CRUD rules
 │   │   └── TrafficMonitor/       # Real-time traffic logs
@@ -85,10 +98,13 @@ proxy-data-saver/
 │   │   └── locales/
 │   │       ├── en.ts             # English translations
 │   │       └── vi.ts             # Vietnamese translations
-│   └── hooks/
-│       ├── useProxy.ts           # Proxy state management
-│       ├── useRules.ts           # Rules state management
-│       └── useTraffic.ts         # Traffic logs state
+│   ├── hooks/
+│   │   ├── useProxy.ts           # Proxy state management
+│   │   ├── useRules.ts           # Rules state management
+│   │   ├── useTraffic.ts         # Traffic logs state
+│   │   └── useStats.ts           # Stats với delta updates + proxy filter
+│   └── utils/
+│       └── formatBytes.ts        # Byte formatting utility
 ├── electron.vite.config.ts
 ├── tailwind.config.js
 └── package.json
@@ -173,8 +189,31 @@ interface TrafficLog {
   action: 'proxy' | 'direct';
   matchedRule: string | null;
   localPort: number;
+  bytesIn: number;            // Bytes nhận từ server
+  bytesOut: number;           // Bytes gửi đến server
 }
 ```
+
+### 5. Stats Tracking
+
+Stats được track theo session và persist vào electron-store (90 ngày):
+
+```typescript
+interface AggregatedStats {
+  period: 'today' | 'week' | 'month' | 'all';
+  totalBytes: number;
+  proxyBytes: number;
+  directBytes: number;
+  savingsPercent: number;     // direct / total * 100
+  requestCount: number;
+  topDomains: DomainStats[];
+  dailyBreakdown: DailyStats[];
+}
+```
+
+**Batched Delta Updates**: Stats được push mỗi 2 giây thay vì per-request để tối ưu performance.
+
+**Per-proxy Tracking**: Mỗi proxy port có stats riêng, có thể filter trên Dashboard.
 
 ---
 
@@ -187,6 +226,8 @@ interface TrafficLog {
 'proxy:error'        // Có lỗi
 'proxy:status-change'// Status thay đổi
 'traffic:new'        // Traffic log mới
+'stats:delta'        // Batched stats update (mỗi 2 giây)
+'stats:reset'        // Stats đã được reset
 ```
 
 ### Renderer → Main (invoke)
@@ -201,6 +242,9 @@ interface TrafficLog {
 'rules:add'          // Add rule
 'rules:update'       // Update rule
 'rules:delete'       // Delete rule
+'stats:get'          // Get stats (period, localPort?)
+'stats:reset'        // Reset all stats
+'stats:getActiveProxyPorts' // Get active proxy ports
 ```
 
 ---
@@ -281,3 +325,12 @@ Nếu port đã được dùng (Docker, etc.), app sẽ fail. User cần đổi 
 - **v1.1.0**: Multi-proxy support
 - **v1.2.0**: SNI Extraction thay thế Reverse DNS
 - **v1.3.0**: Internationalization (i18n) - English/Vietnamese support, improved UI layout
+- **v1.4.0**: Dashboard with Data Savings Tracking
+  - Byte counting với Transform streams
+  - Stats persistence (90 ngày history)
+  - Dashboard UI: Stats cards, Donut chart, Top domains
+  - Period selector: Today/Week/Month/All
+  - Per-proxy stats filter
+  - Batched delta updates (mỗi 2 giây) cho performance
+  - Custom frameless window với titlebar
+  - Window: 16:9 aspect ratio (1024x576), no drag-resize, maximize/minimize allowed

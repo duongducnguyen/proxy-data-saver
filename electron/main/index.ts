@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, Tray, Menu, nativeImage } from 'electron';
+import { app, BrowserWindow, shell, Tray, Menu, nativeImage, ipcMain } from 'electron';
 import { join } from 'path';
 import { registerIpcHandlers } from './ipc-handlers';
 import { configStore } from './config-store';
@@ -9,11 +9,17 @@ let tray: Tray | null = null;
 let isQuitting = false;
 
 function createWindow(): void {
+  // 16:9 aspect ratio
+  const width = 1024;
+  const height = 576;
+
   mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 700,
-    minWidth: 800,
-    minHeight: 600,
+    width,
+    height,
+    resizable: false,
+    maximizable: true,
+    frame: false,
+    titleBarStyle: 'hidden',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       nodeIntegration: false,
@@ -24,6 +30,9 @@ function createWindow(): void {
     show: false,
     backgroundColor: '#111827'
   });
+
+  // Remove default menu
+  Menu.setApplicationMenu(null);
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show();
@@ -52,6 +61,36 @@ function createWindow(): void {
   });
 
   registerIpcHandlers(mainWindow);
+
+  // Window control handlers
+  ipcMain.on('window:minimize', () => {
+    mainWindow?.minimize();
+  });
+
+  ipcMain.on('window:maximize', () => {
+    if (mainWindow?.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow?.maximize();
+    }
+  });
+
+  ipcMain.on('window:close', () => {
+    mainWindow?.close();
+  });
+
+  ipcMain.handle('window:isMaximized', () => {
+    return mainWindow?.isMaximized() ?? false;
+  });
+
+  // Send maximize state changes to renderer
+  mainWindow.on('maximize', () => {
+    mainWindow?.webContents.send('window:maximized', true);
+  });
+
+  mainWindow.on('unmaximize', () => {
+    mainWindow?.webContents.send('window:maximized', false);
+  });
 
   // Auto-start proxy if configured
   const config = configStore.getProxyConfig();

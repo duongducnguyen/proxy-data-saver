@@ -28,3 +28,6 @@ Thumbs.db
 # Temporary
 *.tmp
 *.temp
+
+# Claude Code
+.claude/

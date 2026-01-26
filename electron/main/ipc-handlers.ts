@@ -106,6 +106,28 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     return [];
   });
 
+  // Stats management
+  ipcMain.handle('stats:get', (_event, period: 'today' | 'week' | 'month' | 'all', localPort?: number) => {
+    return proxyServer.getStats(period, localPort);
+  });
+
+  ipcMain.handle('stats:getTopDomains', (_event, period: 'today' | 'week' | 'month' | 'all', limit: number = 10, localPort?: number) => {
+    return proxyServer.getTopDomains(period, limit, localPort);
+  });
+
+  ipcMain.handle('stats:reset', () => {
+    proxyServer.resetStats();
+    return { success: true };
+  });
+
+  ipcMain.handle('stats:getSession', () => {
+    return proxyServer.getSessionStats();
+  });
+
+  ipcMain.handle('stats:getActiveProxyPorts', () => {
+    return proxyServer.getActiveProxyPorts();
+  });
+
   // Forward events to renderer
   proxyServer.on('traffic', (log) => {
     mainWindow.webContents.send('traffic:new', log);
@@ -125,5 +147,14 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
 
   proxyServer.on('status-change', (status) => {
     mainWindow.webContents.send('proxy:status-change', status);
+  });
+
+  proxyServer.on('stats-reset', () => {
+    mainWindow.webContents.send('stats:reset');
+  });
+
+  // Forward stats delta updates (batched, every 2 seconds)
+  proxyServer.on('stats-delta', (delta) => {
+    mainWindow.webContents.send('stats:delta', delta);
   });
 }

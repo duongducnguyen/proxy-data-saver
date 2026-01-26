@@ -7,6 +7,7 @@ export const vi = {
     }
   },
   tabs: {
+    dashboard: 'Bảng điều khiển',
     proxy: 'Proxy',
     rules: 'Quy tắc',
     traffic: 'Lưu lượng'
@@ -65,7 +66,8 @@ hostname:port`,
     },
     hints: {
       configureDevices: 'Cấu hình thiết bị của bạn để sử dụng các địa chỉ này làm HTTP proxy.',
-      yourLanIp: 'IP LAN của bạn'
+      yourLanIp: 'IP LAN của bạn',
+      saveBeforeStart: 'Lưu hoặc huỷ thay đổi trước khi khởi động'
     },
     dismiss: 'Bỏ qua'
   },
@@ -140,7 +142,9 @@ hostname:port`,
       placeholder: 'Lọc theo hostname...',
       all: 'Tất cả',
       proxy: 'Proxy',
-      direct: 'Trực tiếp'
+      direct: 'Trực tiếp',
+      allProxies: 'Tất cả Proxy',
+      proxyPort: 'Port {port}'
     },
     paused: 'Giám sát lưu lượng đang tạm dừng. Nhấn Tiếp tục để tiếp tục.',
     table: {
@@ -153,6 +157,43 @@ hostname:port`,
     noTraffic: 'Chưa có lưu lượng. Khởi động proxy và thực hiện một số yêu cầu.',
     noMatch: 'Không tìm thấy lưu lượng phù hợp.',
     showing: 'Hiển thị {count} / {total} mục'
+  },
+  dashboard: {
+    title: 'Bảng điều khiển',
+    filter: {
+      allProxies: 'Tất cả Proxy'
+    },
+    period: {
+      today: 'Hôm nay',
+      week: 'Tuần',
+      month: 'Tháng',
+      all: 'Tất cả'
+    },
+    stats: {
+      totalData: 'Tổng dữ liệu',
+      proxyData: 'Qua Proxy',
+      directData: 'Trực tiếp',
+      savings: 'Tiết kiệm',
+      requests: 'Yêu cầu'
+    },
+    topDomains: {
+      title: 'Domain hàng đầu',
+      domain: 'Domain',
+      bytes: 'Dữ liệu',
+      requests: 'Yêu cầu',
+      action: 'Hành động',
+      noData: 'Chưa có dữ liệu'
+    },
+    chart: {
+      proxy: 'Qua Proxy',
+      direct: 'Trực tiếp'
+    },
+    actions: {
+      reset: 'Đặt lại',
+      confirmReset: 'Bạn có chắc muốn đặt lại tất cả thống kê? Hành động này không thể hoàn tác.',
+      refresh: 'Làm mới'
+    },
+    noData: 'Chưa có dữ liệu. Khởi động proxy và duyệt web để xem thống kê.'
   },
   language: {
     en: 'English',

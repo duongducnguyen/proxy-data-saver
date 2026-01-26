@@ -304,13 +304,20 @@ export function ProxyConfig({
               </>
             )}
           </div>
-          <button
-            onClick={onStart}
-            disabled={loading || proxyCount === 0}
-            className="btn btn-success"
-          >
-            {loading ? t('proxy.actions.starting') : `${t('proxy.actions.start')} ${proxyCount} ${t('proxy.proxyCount')}`}
-          </button>
+          <div className="relative group">
+            <button
+              onClick={onStart}
+              disabled={loading || proxyCount === 0 || hasChanges}
+              className="btn btn-success"
+            >
+              {loading ? t('proxy.actions.starting') : `${t('proxy.actions.start')} ${proxyCount} ${t('proxy.proxyCount')}`}
+            </button>
+            {hasChanges && (
+              <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-gray-900 text-gray-300 text-xs rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                {t('proxy.hints.saveBeforeStart')}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* LAN IPs */}

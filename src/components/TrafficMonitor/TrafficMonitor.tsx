@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from '../../i18n';
 
 interface TrafficLog {
@@ -10,6 +10,13 @@ interface TrafficLog {
   url: string;
   action: 'proxy' | 'direct';
   matchedRule: string | null;
+  localPort: number;
+}
+
+interface ProxyEntry {
+  id: string;
+  localPort: number;
+  running: boolean;
 }
 
 interface Props {
@@ -23,16 +30,29 @@ interface Props {
     direct: number;
     uniqueHosts: number;
   };
+  proxies: ProxyEntry[];
 }
 
-export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats }: Props) {
+export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats, proxies }: Props) {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<'all' | 'proxy' | 'direct'>('all');
   const [search, setSearch] = useState('');
+  const [proxyFilter, setProxyFilter] = useState<'all' | number>('all');
+
+  // Reset proxyFilter when selected port is no longer available
+  useEffect(() => {
+    if (proxyFilter !== 'all') {
+      const portExists = proxies.some(p => p.localPort === proxyFilter);
+      if (!portExists) {
+        setProxyFilter('all');
+      }
+    }
+  }, [proxies, proxyFilter]);
 
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
       if (filter !== 'all' && log.action !== filter) return false;
+      if (proxyFilter !== 'all' && log.localPort !== proxyFilter) return false;
       if (search) {
         const searchLower = search.toLowerCase();
         const matchHostname = log.hostname.toLowerCase().includes(searchLower);
@@ -41,7 +61,7 @@ export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats }: 
       }
       return true;
     });
-  }, [logs, filter, search]);
+  }, [logs, filter, proxyFilter, search]);
 
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -100,6 +120,20 @@ export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats }: 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+        {proxies.length > 0 && (
+          <select
+            className="input min-w-[140px]"
+            value={proxyFilter}
+            onChange={(e) => setProxyFilter(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
+          >
+            <option value="all">{t('traffic.filter.allProxies')}</option>
+            {proxies.map((p) => (
+              <option key={p.localPort} value={p.localPort}>
+                {t('traffic.filter.proxyPort').replace('{port}', String(p.localPort))}
+              </option>
+            ))}
+          </select>
+        )}
         <div className="flex rounded-lg overflow-hidden border border-gray-700">
           {(['all', 'proxy', 'direct'] as const).map((f) => (
             <button

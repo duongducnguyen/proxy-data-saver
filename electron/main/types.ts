@@ -34,6 +34,38 @@ export interface TrafficLog {
   action: 'proxy' | 'direct';
   matchedRule: string | null;
   localPort: number;
+  bytesIn: number;      // Bytes received from server
+  bytesOut: number;     // Bytes sent to server
+}
+
+// Stats per domain
+export interface DomainStats {
+  hostname: string;
+  totalBytes: number;
+  action: 'proxy' | 'direct' | 'mixed';
+  requestCount: number;
+}
+
+// Daily stats (stored in electron-store)
+export interface DailyStats {
+  date: string;          // "2026-01-26"
+  totalBytes: number;
+  proxyBytes: number;
+  directBytes: number;
+  requestCount: number;
+  topDomains: DomainStats[];
+}
+
+// Aggregated stats for frontend
+export interface AggregatedStats {
+  period: 'today' | 'week' | 'month' | 'all';
+  totalBytes: number;
+  proxyBytes: number;
+  directBytes: number;
+  savingsPercent: number;
+  requestCount: number;
+  topDomains: DomainStats[];
+  dailyBreakdown: DailyStats[];
 }
 
 export interface ProxyStatus {

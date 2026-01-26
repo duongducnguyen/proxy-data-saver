@@ -7,6 +7,7 @@ export const en = {
     }
   },
   tabs: {
+    dashboard: 'Dashboard',
     proxy: 'Proxy',
     rules: 'Rules',
     traffic: 'Traffic'
@@ -65,7 +66,8 @@ hostname:port`,
     },
     hints: {
       configureDevices: 'Configure your devices to use these addresses as HTTP proxy.',
-      yourLanIp: 'Your LAN IP'
+      yourLanIp: 'Your LAN IP',
+      saveBeforeStart: 'Save or discard changes before starting'
     },
     dismiss: 'Dismiss'
   },
@@ -140,7 +142,9 @@ hostname:port`,
       placeholder: 'Filter by hostname...',
       all: 'All',
       proxy: 'Proxy',
-      direct: 'Direct'
+      direct: 'Direct',
+      allProxies: 'All Proxies',
+      proxyPort: 'Port {port}'
     },
     paused: 'Traffic monitoring is paused. Click Resume to continue.',
     table: {
@@ -153,6 +157,43 @@ hostname:port`,
     noTraffic: 'No traffic yet. Start the proxy and make some requests.',
     noMatch: 'No matching traffic found.',
     showing: 'Showing {count} of {total} entries'
+  },
+  dashboard: {
+    title: 'Dashboard',
+    filter: {
+      allProxies: 'All Proxies'
+    },
+    period: {
+      today: 'Today',
+      week: 'Week',
+      month: 'Month',
+      all: 'All Time'
+    },
+    stats: {
+      totalData: 'Total Data',
+      proxyData: 'Proxy Data',
+      directData: 'Direct Data',
+      savings: 'Savings',
+      requests: 'Requests'
+    },
+    topDomains: {
+      title: 'Top Domains',
+      domain: 'Domain',
+      bytes: 'Data',
+      requests: 'Requests',
+      action: 'Action',
+      noData: 'No data yet'
+    },
+    chart: {
+      proxy: 'Via Proxy',
+      direct: 'Direct'
+    },
+    actions: {
+      reset: 'Reset Stats',
+      confirmReset: 'Are you sure you want to reset all statistics? This cannot be undone.',
+      refresh: 'Refresh'
+    },
+    noData: 'No data recorded yet. Start the proxy and browse to see statistics.'
   },
   language: {
     en: 'English',

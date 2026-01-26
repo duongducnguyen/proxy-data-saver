@@ -1,9 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { Rule, ProxyConfig, ProxyStatus, TrafficLog, AppConfig, ProxyEntry } from '../main/types';
+import type { Rule, ProxyConfig, ProxyStatus, TrafficLog, AppConfig, ProxyEntry, AggregatedStats, DomainStats, DailyStats } from '../main/types';
+import type { StatsDelta, ProxyStatsSummary } from '../main/stats-manager';
 
 console.log('Preload script loading...');
 
-export type { Rule, ProxyConfig, ProxyStatus, TrafficLog, AppConfig, ProxyEntry };
+export type { Rule, ProxyConfig, ProxyStatus, TrafficLog, AppConfig, ProxyEntry, AggregatedStats, DomainStats, DailyStats, StatsDelta, ProxyStatsSummary };
 
 const electronAPI = {
   // Proxy control
@@ -67,6 +68,43 @@ const electronAPI = {
       const listener = (_event: Electron.IpcRendererEvent, log: TrafficLog) => callback(log);
       ipcRenderer.on('traffic:new', listener);
       return () => ipcRenderer.removeListener('traffic:new', listener);
+    }
+  },
+
+  // Window control
+  window: {
+    minimize: () => ipcRenderer.send('window:minimize'),
+    maximize: () => ipcRenderer.send('window:maximize'),
+    close: () => ipcRenderer.send('window:close'),
+    isMaximized: (): Promise<boolean> => ipcRenderer.invoke('window:isMaximized'),
+    onMaximizedChange: (callback: (isMaximized: boolean) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, isMaximized: boolean) => callback(isMaximized);
+      ipcRenderer.on('window:maximized', listener);
+      return () => ipcRenderer.removeListener('window:maximized', listener);
+    }
+  },
+
+  // Stats management
+  stats: {
+    get: (period: 'today' | 'week' | 'month' | 'all', localPort?: number): Promise<AggregatedStats> =>
+      ipcRenderer.invoke('stats:get', period, localPort),
+    getTopDomains: (period: 'today' | 'week' | 'month' | 'all', limit?: number, localPort?: number): Promise<DomainStats[]> =>
+      ipcRenderer.invoke('stats:getTopDomains', period, limit, localPort),
+    reset: (): Promise<{ success: boolean }> =>
+      ipcRenderer.invoke('stats:reset'),
+    getSession: (): Promise<{ totalBytes: number; proxyBytes: number; directBytes: number; requestCount: number }> =>
+      ipcRenderer.invoke('stats:getSession'),
+    getActiveProxyPorts: (): Promise<number[]> =>
+      ipcRenderer.invoke('stats:getActiveProxyPorts'),
+    onReset: (callback: () => void) => {
+      const listener = () => callback();
+      ipcRenderer.on('stats:reset', listener);
+      return () => ipcRenderer.removeListener('stats:reset', listener);
+    },
+    onDelta: (callback: (delta: StatsDelta) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, delta: StatsDelta) => callback(delta);
+      ipcRenderer.on('stats:delta', listener);
+      return () => ipcRenderer.removeListener('stats:delta', listener);
     }
   }
 };
