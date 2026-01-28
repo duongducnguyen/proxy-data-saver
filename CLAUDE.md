@@ -334,3 +334,7 @@ Nếu port đã được dùng (Docker, etc.), app sẽ fail. User cần đổi 
   - Batched delta updates (mỗi 2 giây) cho performance
   - Custom frameless window với titlebar
   - Window: 16:9 aspect ratio (1024x576), no drag-resize, maximize/minimize allowed
+- **v1.5.0**: Flatten monorepo structure
+  - Di chuyển code từ `client/` lên root folder
+  - Xóa cấu trúc monorepo, giờ là single project
+  - ARCHITECTURE.md đổi tên thành CLAUDE.md

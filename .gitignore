@@ -1,9 +1,37 @@
-# Root level ignores
+# Dependencies
 node_modules/
+
+# Build output
 out/
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Electron
+*.asar
+
+# Temporary
+*.tmp
+*.temp
 
 # Auto Claude data directory
 .auto-claude/
+.claude/
 
 # Auto Claude generated files
 .auto-claude-security.json
