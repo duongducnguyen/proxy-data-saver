@@ -3,7 +3,25 @@ import { proxyServer } from './proxy-server';
 import { configStore } from './config-store';
 import { Rule, ProxyConfig } from './types';
 
+let handlersRegistered = false;
+let currentWindow: BrowserWindow | null = null;
+const eventListeners: Array<{ event: string; listener: (...args: unknown[]) => void }> = [];
+
+// Helper to safely send to renderer
+function safeSend(channel: string, ...args: unknown[]): void {
+  if (currentWindow && !currentWindow.isDestroyed()) {
+    currentWindow.webContents.send(channel, ...args);
+  }
+}
+
 export function registerIpcHandlers(mainWindow: BrowserWindow): void {
+  currentWindow = mainWindow;
+
+  // Only register handlers once
+  if (handlersRegistered) {
+    return;
+  }
+  handlersRegistered = true;
   // Proxy control
   ipcMain.handle('proxy:start', async () => {
     const config = configStore.getProxyConfig();
@@ -128,33 +146,46 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     return proxyServer.getActiveProxyPorts();
   });
 
-  // Forward events to renderer
-  proxyServer.on('traffic', (log) => {
-    mainWindow.webContents.send('traffic:new', log);
-  });
+  // Forward events to renderer (with destroyed window check)
+  const trafficListener = (log: unknown) => safeSend('traffic:new', log);
+  const startedListener = (status: unknown) => safeSend('proxy:started', status);
+  const stoppedListener = () => safeSend('proxy:stopped');
+  const errorListener = (error: { message: string }) => safeSend('proxy:error', error.message);
+  const statusChangeListener = (status: unknown) => safeSend('proxy:status-change', status);
+  const statsResetListener = () => safeSend('stats:reset');
+  const statsDeltaListener = (delta: unknown) => safeSend('stats:delta', delta);
 
-  proxyServer.on('started', (status) => {
-    mainWindow.webContents.send('proxy:started', status);
-  });
+  proxyServer.on('traffic', trafficListener);
+  proxyServer.on('started', startedListener);
+  proxyServer.on('stopped', stoppedListener);
+  proxyServer.on('error', errorListener);
+  proxyServer.on('status-change', statusChangeListener);
+  proxyServer.on('stats-reset', statsResetListener);
+  proxyServer.on('stats-delta', statsDeltaListener);
 
-  proxyServer.on('stopped', () => {
-    mainWindow.webContents.send('proxy:stopped');
-  });
+  // Track listeners for cleanup
+  eventListeners.push(
+    { event: 'traffic', listener: trafficListener },
+    { event: 'started', listener: startedListener },
+    { event: 'stopped', listener: stoppedListener },
+    { event: 'error', listener: errorListener },
+    { event: 'status-change', listener: statusChangeListener },
+    { event: 'stats-reset', listener: statsResetListener },
+    { event: 'stats-delta', listener: statsDeltaListener }
+  );
+}
 
-  proxyServer.on('error', (error) => {
-    mainWindow.webContents.send('proxy:error', error.message);
-  });
+// Update window reference when window is recreated
+export function updateWindowReference(mainWindow: BrowserWindow): void {
+  currentWindow = mainWindow;
+}
 
-  proxyServer.on('status-change', (status) => {
-    mainWindow.webContents.send('proxy:status-change', status);
-  });
-
-  proxyServer.on('stats-reset', () => {
-    mainWindow.webContents.send('stats:reset');
-  });
-
-  // Forward stats delta updates (batched, every 2 seconds)
-  proxyServer.on('stats-delta', (delta) => {
-    mainWindow.webContents.send('stats:delta', delta);
-  });
+// Cleanup function for app quit
+export function cleanupIpcHandlers(): void {
+  for (const { event, listener } of eventListeners) {
+    proxyServer.removeListener(event, listener);
+  }
+  eventListeners.length = 0;
+  currentWindow = null;
+  handlersRegistered = false;
 }

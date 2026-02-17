@@ -1,12 +1,14 @@
 import { app, BrowserWindow, shell, Tray, Menu, nativeImage, ipcMain } from 'electron';
 import { join } from 'path';
-import { registerIpcHandlers } from './ipc-handlers';
+import { registerIpcHandlers, updateWindowReference, cleanupIpcHandlers } from './ipc-handlers';
 import { configStore } from './config-store';
 import { proxyServer } from './proxy-server';
+import { statsManager } from './stats-manager';
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let isQuitting = false;
+let windowControlsRegistered = false;
 
 function createWindow(): void {
   // 16:9 aspect ratio
@@ -60,28 +62,34 @@ function createWindow(): void {
     console.error('Failed to load:', errorCode, errorDescription);
   });
 
+  // Register IPC handlers (only once, but update window reference)
   registerIpcHandlers(mainWindow);
+  updateWindowReference(mainWindow);
 
-  // Window control handlers
-  ipcMain.on('window:minimize', () => {
-    mainWindow?.minimize();
-  });
+  // Window control handlers (register only once)
+  if (!windowControlsRegistered) {
+    windowControlsRegistered = true;
 
-  ipcMain.on('window:maximize', () => {
-    if (mainWindow?.isMaximized()) {
-      mainWindow.unmaximize();
-    } else {
-      mainWindow?.maximize();
-    }
-  });
+    ipcMain.on('window:minimize', () => {
+      mainWindow?.minimize();
+    });
 
-  ipcMain.on('window:close', () => {
-    mainWindow?.close();
-  });
+    ipcMain.on('window:maximize', () => {
+      if (mainWindow?.isMaximized()) {
+        mainWindow.unmaximize();
+      } else {
+        mainWindow?.maximize();
+      }
+    });
 
-  ipcMain.handle('window:isMaximized', () => {
-    return mainWindow?.isMaximized() ?? false;
-  });
+    ipcMain.on('window:close', () => {
+      mainWindow?.close();
+    });
+
+    ipcMain.handle('window:isMaximized', () => {
+      return mainWindow?.isMaximized() ?? false;
+    });
+  }
 
   // Send maximize state changes to renderer
   mainWindow.on('maximize', () => {
@@ -94,7 +102,7 @@ function createWindow(): void {
 
   // Auto-start proxy if configured
   const config = configStore.getProxyConfig();
-  if (config.autoStart && config.upstreamProxyUrl) {
+  if (config.autoStart && config.proxyList) {
     const rules = configStore.getRules();
     proxyServer.start(config, rules).catch((err) => {
       console.error('Failed to auto-start proxy:', err);
@@ -160,7 +168,13 @@ function createTray(): void {
       label: 'Quit',
       click: async () => {
         isQuitting = true;
-        await proxyServer.stop();
+        try {
+          statsManager.stopBatchTimer();
+          cleanupIpcHandlers();
+          await proxyServer.stop();
+        } catch (err) {
+          console.error('Error during quit cleanup:', err);
+        }
         app.quit();
       }
     }
@@ -205,7 +219,16 @@ app.on('before-quit', async (event) => {
   if (!isQuitting) {
     event.preventDefault();
     isQuitting = true;
-    await proxyServer.stop();
+    try {
+      // Stop batch timer first
+      statsManager.stopBatchTimer();
+      // Cleanup IPC handlers
+      cleanupIpcHandlers();
+      // Stop proxy server
+      await proxyServer.stop();
+    } catch (err) {
+      console.error('Error during cleanup:', err);
+    }
     app.quit();
   }
 });
