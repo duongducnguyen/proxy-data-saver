@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,59 +10,126 @@
   }
 
   body {
-    @apply bg-gray-900 text-gray-100 font-sans antialiased;
+    @apply bg-neutral-950 text-neutral-200 font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /* Better text rendering */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
 @layer components {
+  /* Minimalist button - subtle, text-focused */
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2;
+    @apply px-3 py-1.5 text-sm font-medium;
+    @apply rounded transition-colors duration-150;
+    @apply disabled:opacity-40 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 text-white;
-  }
-
-  .btn-success {
-    @apply bg-green-600 hover:bg-green-700 text-white;
-  }
-
-  .btn-danger {
-    @apply bg-red-600 hover:bg-red-700 text-white;
+    @apply bg-neutral-100 text-neutral-900;
+    @apply hover:bg-white;
   }
 
   .btn-secondary {
-    @apply bg-gray-700 hover:bg-gray-600 text-white;
+    @apply bg-neutral-800 text-neutral-300;
+    @apply hover:bg-neutral-750 hover:text-neutral-100;
   }
 
+  .btn-ghost {
+    @apply bg-transparent text-neutral-400;
+    @apply hover:bg-neutral-800 hover:text-neutral-200;
+  }
+
+  .btn-danger {
+    @apply bg-transparent text-danger-text;
+    @apply hover:bg-danger-muted;
+  }
+
+  /* Minimalist input */
   .input {
-    @apply w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+    @apply w-full px-3 py-2;
+    @apply bg-neutral-900 text-neutral-100;
+    @apply border border-neutral-800 rounded;
+    @apply placeholder-neutral-600;
+    @apply focus:outline-none focus:border-neutral-600;
+    @apply transition-colors duration-150;
   }
 
-  .card {
-    @apply bg-gray-800 rounded-xl p-6 border border-gray-700;
+  .input:focus {
+    @apply ring-0;
   }
 
+  /* Clean label */
   .label {
-    @apply block text-sm font-medium text-gray-300 mb-1;
+    @apply block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5;
+  }
+
+  /* Minimal card - no heavy borders */
+  .card {
+    @apply bg-neutral-900/50 rounded-lg p-5;
+  }
+
+  /* Subtle divider */
+  .divider {
+    @apply border-t border-neutral-800/50;
+  }
+
+  /* Badge - minimal */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 text-xs font-medium rounded;
+  }
+
+  .badge-neutral {
+    @apply bg-neutral-800 text-neutral-400;
+  }
+
+  .badge-success {
+    @apply bg-success-muted text-success-text;
+  }
+
+  .badge-accent {
+    @apply bg-accent-muted text-accent;
+  }
+
+  /* Status indicator */
+  .status-dot {
+    @apply w-1.5 h-1.5 rounded-full;
+  }
+
+  .status-dot-active {
+    @apply bg-success;
+  }
+
+  .status-dot-inactive {
+    @apply bg-neutral-600;
   }
 }
 
-/* Custom scrollbar */
+/* Minimal scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 4px;
+  background: #333;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: #444;
+}
+
+/* Selection */
+::selection {
+  background: rgba(99, 102, 241, 0.3);
 }

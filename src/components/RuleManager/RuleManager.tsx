@@ -84,19 +84,19 @@ export function RuleManager({
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center card">
-        <div className="text-center text-gray-400">Loading...</div>
+      <div className="h-full flex items-center justify-center">
+        <div className="text-neutral-600 text-sm">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col card">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex-shrink-0 flex items-center justify-between pb-4 border-b border-gray-700">
-        <h2 className="text-xl font-bold text-white">{t('rules.title')}</h2>
+      <div className="flex-shrink-0 flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-neutral-100">{t('rules.title')}</h2>
         <div className="flex gap-2">
-          <button onClick={() => setShowTester(!showTester)} className="btn btn-secondary">
+          <button onClick={() => setShowTester(!showTester)} className="btn btn-ghost">
             {showTester ? t('rules.hideTester') : t('rules.testRules')}
           </button>
           <button onClick={handleAddNew} className="btn btn-primary">
@@ -107,9 +107,9 @@ export function RuleManager({
 
       {/* Error */}
       {error && (
-        <div className="flex-shrink-0 mt-4 bg-red-900/50 border border-red-700 rounded-lg p-4 flex justify-between items-center">
-          <span className="text-red-300">{error}</span>
-          <button onClick={onClearError} className="text-red-400 hover:text-red-300">
+        <div className="flex-shrink-0 mb-4 bg-danger-muted rounded-lg p-3 flex justify-between items-center">
+          <span className="text-danger-text text-sm">{error}</span>
+          <button onClick={onClearError} className="text-danger-text hover:text-red-300 text-sm">
             {t('rules.dismiss')}
           </button>
         </div>
@@ -117,14 +117,14 @@ export function RuleManager({
 
       {/* Tester */}
       {showTester && (
-        <div className="flex-shrink-0 mt-4">
+        <div className="flex-shrink-0 mb-4">
           <RuleTester onTest={onTestRule} rules={rules} />
         </div>
       )}
 
       {/* Editor */}
       {showEditor && (
-        <div className="flex-shrink-0 mt-4">
+        <div className="flex-shrink-0 mb-4">
           <RuleEditor
             rule={editingRule}
             existingPriorities={rules.map((r) => r.priority)}
@@ -136,18 +136,18 @@ export function RuleManager({
       )}
 
       {/* Info */}
-      <div className="flex-shrink-0 text-sm text-gray-500 mt-4 mb-2">
+      <div className="flex-shrink-0 text-xs text-neutral-600 mb-3">
         {t('rules.rulesInfo')}
       </div>
 
-      {/* Rules List - Scrollable */}
+      {/* Rules List */}
       <div className="flex-1 overflow-y-auto">
         {rules.length === 0 ? (
-          <div className="text-center text-gray-500 py-8 bg-gray-900 rounded-lg">
+          <div className="text-center text-neutral-600 py-12 text-sm">
             {t('rules.noRules')}
           </div>
         ) : (
-          <div className="space-y-2 pr-1">
+          <div className="space-y-2">
             {rules.map((rule, index) => (
               <RuleItem
                 key={rule.id}

@@ -101,9 +101,12 @@ function createWindow(): void {
     });
   }
 
-  mainWindow.on('close', () => {
-    // Don't prevent close - let app quit and stop proxy
-    isQuitting = true;
+  // Minimize to tray instead of closing
+  mainWindow.on('close', (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      mainWindow?.hide();
+    }
   });
 }
 
@@ -128,7 +131,10 @@ function createTray(): void {
     {
       label: 'Show Window',
       click: () => {
-        mainWindow?.show();
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
       }
     },
     {
@@ -152,10 +158,10 @@ function createTray(): void {
     { type: 'separator' },
     {
       label: 'Quit',
-      click: () => {
-        proxyServer.stop().then(() => {
-          app.quit();
-        });
+      click: async () => {
+        isQuitting = true;
+        await proxyServer.stop();
+        app.quit();
       }
     }
   ]);
@@ -164,7 +170,18 @@ function createTray(): void {
   tray.setContextMenu(contextMenu);
 
   tray.on('double-click', () => {
-    mainWindow?.show();
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+
+  // Single click also shows window (Windows behavior)
+  tray.on('click', () => {
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
   });
 }
 
@@ -180,12 +197,8 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    isQuitting = true;
-    proxyServer.stop().then(() => {
-      app.quit();
-    });
-  }
+  // Don't quit - app runs in tray
+  // Only quit via tray menu "Quit" or when isQuitting is true
 });
 
 app.on('before-quit', async (event) => {

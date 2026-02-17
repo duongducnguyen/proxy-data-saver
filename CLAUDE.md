@@ -338,3 +338,14 @@ Nếu port đã được dùng (Docker, etc.), app sẽ fail. User cần đổi 
   - Di chuyển code từ `client/` lên root folder
   - Xóa cấu trúc monorepo, giờ là single project
   - ARCHITECTURE.md đổi tên thành CLAUDE.md
+- **v1.6.0**: UI Refactoring & Bug Fixes
+  - Minimalist UI redesign (Notion/Linear/Stripe inspired)
+  - Neutral color palette (white/gray/black với indigo accent)
+  - Clean typography, lots of whitespace, no heavy borders/shadows
+  - Traffic logging: log ngay khi connection established (không đợi close)
+  - SNI timeout giảm từ 1000ms → 150ms
+  - Fix binary data handling trong tunnelViaProxy (dùng Buffer thay vì string)
+  - Fix deprecated substr() → substring()
+  - Fix tray behavior: click X ẩn vào tray, click tray mở lại
+  - Thêm error handling cho socket operations
+  - Generated logo options trong resources/

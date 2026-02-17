@@ -19,17 +19,17 @@ export function PeriodSelector({ period, onChange, loading }: PeriodSelectorProp
   ];
 
   return (
-    <div className="flex bg-gray-800 rounded-lg p-1 gap-1">
+    <div className="flex bg-neutral-900 rounded p-0.5 gap-0.5">
       {periods.map((p) => (
         <button
           key={p.id}
           onClick={() => onChange(p.id)}
           disabled={loading}
-          className={`px-3 py-1.5 text-sm rounded transition-colors ${
+          className={`px-2.5 py-1 text-xs font-medium rounded transition-colors ${
             period === p.id
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-400 hover:text-white hover:bg-gray-700'
-          } ${loading ? 'opacity-50 cursor-wait' : ''}`}
+              ? 'bg-neutral-800 text-neutral-100'
+              : 'text-neutral-500 hover:text-neutral-300'
+          } ${loading ? 'opacity-50' : ''}`}
         >
           {t(p.labelKey)}
         </button>

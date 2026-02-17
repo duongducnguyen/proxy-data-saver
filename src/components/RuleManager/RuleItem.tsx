@@ -35,87 +35,75 @@ export function RuleItem({
 
   return (
     <div
-      className={`flex items-center gap-4 p-4 rounded-lg border transition-colors ${
+      className={`flex items-center gap-4 p-3 rounded-lg transition-colors group ${
         rule.enabled
-          ? 'bg-gray-900 border-gray-700'
-          : 'bg-gray-900/50 border-gray-800 opacity-60'
+          ? 'bg-neutral-900/50 hover:bg-neutral-900'
+          : 'bg-neutral-950 opacity-50'
       }`}
     >
-      <div className="flex flex-col gap-1">
+      {/* Reorder buttons */}
+      <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={onMoveUp}
           disabled={index === 0}
-          className="text-gray-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
-          title={t('rules.item.moveUp')}
+          className="text-neutral-600 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed p-0.5"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
           </svg>
         </button>
         <button
           onClick={onMoveDown}
           disabled={index === total - 1}
-          className="text-gray-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
-          title={t('rules.item.moveDown')}
+          className="text-neutral-600 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed p-0.5"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
       </div>
 
+      {/* Toggle */}
       <label className="flex items-center cursor-pointer">
         <input
           type="checkbox"
-          className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
+          className="w-3.5 h-3.5 rounded border-neutral-700 bg-neutral-900 text-accent focus:ring-accent/50"
           checked={rule.enabled}
           onChange={(e) => onToggle(e.target.checked)}
         />
       </label>
 
+      {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-white truncate">{rule.name}</span>
-          <span
-            className={`px-2 py-0.5 text-xs rounded-full ${
-              rule.action === 'proxy'
-                ? 'bg-blue-900 text-blue-300'
-                : 'bg-green-900 text-green-300'
-            }`}
-          >
+          <span className="font-medium text-sm text-neutral-200 truncate">{rule.name}</span>
+          <span className={`text-2xs px-1.5 py-0.5 rounded font-medium ${
+            rule.action === 'direct'
+              ? 'text-success-text'
+              : 'text-neutral-500'
+          }`}>
             {rule.action === 'proxy' ? t('rules.item.proxy') : t('rules.item.direct')}
           </span>
         </div>
-        <code className="text-sm text-gray-400 truncate block">{rule.pattern}</code>
+        <code className="text-xs text-neutral-500 truncate block font-mono">{rule.pattern}</code>
       </div>
 
-      <div className="flex gap-2">
+      {/* Actions */}
+      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={onEdit}
-          className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded"
-          title={t('rules.item.edit')}
+          className="p-1.5 text-neutral-600 hover:text-neutral-300 rounded hover:bg-neutral-800 transition-colors"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-            />
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
           </svg>
         </button>
         <button
           onClick={onDelete}
-          className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded"
-          title={t('rules.item.delete')}
+          className="p-1.5 text-neutral-600 hover:text-danger-text rounded hover:bg-danger-muted transition-colors"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-            />
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
         </button>
       </div>

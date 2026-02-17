@@ -18,13 +18,11 @@ interface Props {
   onValidate: (pattern: string) => Promise<{ valid: boolean; error?: string }>;
 }
 
-// Convert comma-separated pattern to newline-separated for display
 function patternToLines(pattern: string): string {
   if (!pattern) return '';
   return pattern.split(',').map(p => p.trim()).filter(Boolean).join('\n');
 }
 
-// Convert newline-separated pattern to comma-separated for storage
 function linesToPattern(lines: string): string {
   if (!lines) return '';
   return lines.split('\n').map(l => l.trim()).filter(Boolean).join(', ');
@@ -52,7 +50,6 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
         return;
       }
       setValidating(true);
-      // Convert newlines to comma for validation
       const result = await onValidate(linesToPattern(pattern));
       setPatternError(result.valid ? null : result.error || t('rules.form.patternInvalid'));
       setValidating(false);
@@ -78,8 +75,8 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
   const isValid = name && pattern && !patternError && !validating;
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-900 rounded-lg p-4 border border-gray-700 space-y-4">
-      <h3 className="font-medium text-white">
+    <form onSubmit={handleSubmit} className="bg-neutral-900/50 rounded-lg p-4 space-y-4">
+      <h3 className="text-sm font-medium text-neutral-200">
         {rule ? t('rules.editRule') : t('rules.addRule')}
       </h3>
 
@@ -111,16 +108,16 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
         <div className="md:col-span-2">
           <label className="label">{t('rules.form.pattern')}</label>
           <textarea
-            className={`input min-h-[120px] resize-y font-mono text-sm ${patternError ? 'border-red-500 focus:ring-red-500' : ''}`}
+            className={`input min-h-[100px] resize-y font-mono text-sm ${patternError ? 'border-danger' : ''}`}
             placeholder={t('rules.form.patternPlaceholder')}
             value={pattern}
             onChange={(e) => setPattern(e.target.value)}
             required
           />
           {patternError && (
-            <p className="text-red-400 text-sm mt-1">{patternError}</p>
+            <p className="text-danger-text text-xs mt-1">{patternError}</p>
           )}
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-neutral-600 mt-1">
             {t('rules.form.patternHint')}
           </p>
         </div>
@@ -134,7 +131,7 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
             onChange={(e) => setPriority(parseInt(e.target.value) || 100)}
             min={1}
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-neutral-600 mt-1">
             {t('rules.form.priorityHint')}
           </p>
         </div>
@@ -143,28 +140,20 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
           <label className="flex items-center gap-2 cursor-pointer mt-6">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
+              className="w-4 h-4 rounded border-neutral-700 bg-neutral-900 text-accent focus:ring-accent/50"
               checked={enabled}
               onChange={(e) => setEnabled(e.target.checked)}
             />
-            <span className="text-gray-300">{t('rules.form.enabled')}</span>
+            <span className="text-sm text-neutral-400">{t('rules.form.enabled')}</span>
           </label>
         </div>
       </div>
 
       <div className="flex gap-2 pt-2">
-        <button
-          type="submit"
-          disabled={!isValid}
-          className="btn btn-primary"
-        >
+        <button type="submit" disabled={!isValid} className="btn btn-primary">
           {t('rules.form.save')}
         </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="btn btn-secondary"
-        >
+        <button type="button" onClick={onCancel} className="btn btn-ghost">
           {t('rules.form.cancel')}
         </button>
       </div>

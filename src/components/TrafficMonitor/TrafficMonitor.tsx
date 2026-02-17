@@ -39,7 +39,6 @@ export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats, pr
   const [search, setSearch] = useState('');
   const [proxyFilter, setProxyFilter] = useState<'all' | number>('all');
 
-  // Reset proxyFilter when selected port is no longer available
   useEffect(() => {
     if (proxyFilter !== 'all') {
       const portExists = proxies.some(p => p.localPort === proxyFilter);
@@ -74,75 +73,69 @@ export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats, pr
   };
 
   return (
-    <div className="h-full flex flex-col card">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex-shrink-0 flex items-center justify-between pb-4 border-b border-gray-700">
-        <h2 className="text-xl font-bold text-white">{t('traffic.title')}</h2>
+      <div className="flex-shrink-0 flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-neutral-100">{t('traffic.title')}</h2>
         <div className="flex gap-2">
-          <button
-            onClick={onTogglePause}
-            className={`btn ${paused ? 'btn-success' : 'btn-secondary'}`}
-          >
+          <button onClick={onTogglePause} className={`btn ${paused ? 'btn-primary' : 'btn-ghost'}`}>
             {paused ? t('traffic.resume') : t('traffic.pause')}
           </button>
-          <button onClick={onClear} className="btn btn-danger">
+          <button onClick={onClear} className="btn btn-ghost">
             {t('traffic.clear')}
           </button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="flex-shrink-0 grid grid-cols-4 gap-3 mt-4">
-        <div className="bg-gray-900 rounded-lg p-2 text-center">
-          <div className="text-xl font-bold text-white">{stats.total}</div>
-          <div className="text-xs text-gray-500">{t('traffic.stats.total')}</div>
-        </div>
-        <div className="bg-gray-900 rounded-lg p-2 text-center">
-          <div className="text-xl font-bold text-blue-400">{stats.proxy}</div>
-          <div className="text-xs text-gray-500">{t('traffic.stats.proxy')}</div>
-        </div>
-        <div className="bg-gray-900 rounded-lg p-2 text-center">
-          <div className="text-xl font-bold text-green-400">{stats.direct}</div>
-          <div className="text-xs text-gray-500">{t('traffic.stats.direct')}</div>
-        </div>
-        <div className="bg-gray-900 rounded-lg p-2 text-center">
-          <div className="text-xl font-bold text-purple-400">{stats.uniqueHosts}</div>
-          <div className="text-xs text-gray-500">{t('traffic.stats.hosts')}</div>
-        </div>
+      <div className="flex-shrink-0 grid grid-cols-4 gap-3 mb-5">
+        {[
+          { label: t('traffic.stats.total'), value: stats.total },
+          { label: t('traffic.stats.proxy'), value: stats.proxy },
+          { label: t('traffic.stats.direct'), value: stats.direct, highlight: true },
+          { label: t('traffic.stats.hosts'), value: stats.uniqueHosts }
+        ].map((stat, i) => (
+          <div key={i} className="bg-neutral-900/50 rounded-lg p-3 text-center">
+            <div className={`text-xl font-semibold tabular-nums ${stat.highlight ? 'text-success-text' : 'text-neutral-100'}`}>
+              {stat.value}
+            </div>
+            <div className="text-2xs text-neutral-500 uppercase tracking-wider">{stat.label}</div>
+          </div>
+        ))}
       </div>
 
       {/* Filters */}
-      <div className="flex-shrink-0 flex flex-wrap gap-2 mt-4">
+      <div className="flex-shrink-0 flex flex-wrap gap-2 mb-4">
         <input
           type="text"
-          className="input flex-1 min-w-[200px]"
+          className="input flex-1 min-w-[180px]"
           placeholder={t('traffic.filter.placeholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         {proxies.length > 0 && (
           <select
-            className="input min-w-[140px]"
+            className="input min-w-[120px]"
             value={proxyFilter}
             onChange={(e) => setProxyFilter(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
           >
             <option value="all">{t('traffic.filter.allProxies')}</option>
             {proxies.map((p) => (
               <option key={p.localPort} value={p.localPort}>
-                {t('traffic.filter.proxyPort').replace('{port}', String(p.localPort))}
+                Port {p.localPort}
               </option>
             ))}
           </select>
         )}
-        <div className="flex rounded-lg overflow-hidden border border-gray-700">
+        <div className="flex bg-neutral-900 rounded p-0.5 gap-0.5">
           {(['all', 'proxy', 'direct'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                 filter === f
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                  ? 'bg-neutral-800 text-neutral-100'
+                  : 'text-neutral-500 hover:text-neutral-300'
               }`}
             >
               {f === 'all' ? t('traffic.filter.all') : f === 'proxy' ? t('traffic.filter.proxy') : t('traffic.filter.direct')}
@@ -151,74 +144,62 @@ export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats, pr
         </div>
       </div>
 
-      {/* Paused Warning */}
+      {/* Paused warning */}
       {paused && (
-        <div className="flex-shrink-0 mt-4 bg-yellow-900/30 border border-yellow-700 rounded-lg p-2 text-center text-yellow-300 text-sm">
+        <div className="flex-shrink-0 mb-4 bg-neutral-900 rounded-lg p-2 text-center text-xs text-neutral-500">
           {t('traffic.paused')}
         </div>
       )}
 
-      {/* Table - Scrollable */}
-      <div className="flex-1 overflow-hidden mt-4 bg-gray-900 rounded-lg">
+      {/* Table */}
+      <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-gray-800">
-              <tr className="text-gray-400 text-left">
-                <th className="px-4 py-3 font-medium">{t('traffic.table.time')}</th>
-                <th className="px-4 py-3 font-medium">{t('traffic.table.method')}</th>
-                <th className="px-4 py-3 font-medium">{t('traffic.table.hostname')}</th>
-                <th className="px-4 py-3 font-medium">{t('traffic.table.action')}</th>
-                <th className="px-4 py-3 font-medium">{t('traffic.table.rule')}</th>
+            <thead className="sticky top-0 bg-neutral-950">
+              <tr className="text-left text-neutral-500 text-xs uppercase tracking-wider">
+                <th className="pb-3 font-medium w-20">{t('traffic.table.time')}</th>
+                <th className="pb-3 font-medium w-20">{t('traffic.table.method')}</th>
+                <th className="pb-3 font-medium">{t('traffic.table.hostname')}</th>
+                <th className="pb-3 font-medium w-16">{t('traffic.table.action')}</th>
+                <th className="pb-3 font-medium w-32">{t('traffic.table.rule')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-neutral-900">
               {filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                    {logs.length === 0
-                      ? t('traffic.noTraffic')
-                      : t('traffic.noMatch')}
+                  <td colSpan={5} className="py-12 text-center text-neutral-600 text-sm">
+                    {logs.length === 0 ? t('traffic.noTraffic') : t('traffic.noMatch')}
                   </td>
                 </tr>
               ) : (
                 filteredLogs.slice(0, 100).map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-800/50 transition-colors">
-                    <td className="px-4 py-2 text-gray-400 font-mono text-xs">
+                  <tr key={log.id} className="group">
+                    <td className="py-2 text-neutral-500 font-mono text-xs">
                       {formatTime(log.timestamp)}
                     </td>
-                    <td className="px-4 py-2">
-                      <span className="px-2 py-0.5 bg-gray-700 rounded text-xs font-mono">
+                    <td className="py-2">
+                      <span className="text-2xs font-mono text-neutral-500">
                         {log.method}
                       </span>
                     </td>
-                    <td className="px-4 py-2 font-mono text-xs max-w-[300px]">
+                    <td className="py-2 font-mono text-xs max-w-[280px]">
                       {log.resolvedHostname ? (
                         <div>
-                          <div className="text-green-400 truncate" title={`SNI: ${log.resolvedHostname}`}>
-                            {log.resolvedHostname}
-                          </div>
-                          <div className="text-gray-500 text-[10px] truncate" title={`CONNECT: ${log.hostname}`}>
-                            ({log.hostname})
-                          </div>
+                          <div className="text-neutral-200 truncate">{log.resolvedHostname}</div>
+                          <div className="text-neutral-600 text-2xs truncate">({log.hostname})</div>
                         </div>
                       ) : (
-                        <span className="text-yellow-400 truncate" title={`CONNECT: ${log.hostname} (no SNI)`}>
-                          {log.hostname}
-                        </span>
+                        <span className="text-neutral-400 truncate">{log.hostname}</span>
                       )}
                     </td>
-                    <td className="px-4 py-2">
-                      <span
-                        className={`px-2 py-0.5 text-xs rounded-full ${
-                          log.action === 'proxy'
-                            ? 'bg-blue-900 text-blue-300'
-                            : 'bg-green-900 text-green-300'
-                        }`}
-                      >
-                        {log.action === 'proxy' ? t('traffic.filter.proxy') : t('traffic.filter.direct')}
+                    <td className="py-2">
+                      <span className={`text-2xs font-medium ${
+                        log.action === 'direct' ? 'text-success-text' : 'text-neutral-500'
+                      }`}>
+                        {log.action === 'proxy' ? 'P' : 'D'}
                       </span>
                     </td>
-                    <td className="px-4 py-2 text-gray-400 text-xs truncate max-w-[150px]">
+                    <td className="py-2 text-neutral-600 text-xs truncate max-w-[120px]">
                       {log.matchedRule || '-'}
                     </td>
                   </tr>
@@ -231,7 +212,7 @@ export function TrafficMonitor({ logs, paused, onClear, onTogglePause, stats, pr
 
       {/* Footer */}
       {filteredLogs.length > 100 && (
-        <div className="flex-shrink-0 mt-2 text-center text-gray-500 text-xs">
+        <div className="flex-shrink-0 mt-2 text-center text-neutral-600 text-xs">
           {t('traffic.showing').replace('{count}', '100').replace('{total}', String(filteredLogs.length))}
         </div>
       )}

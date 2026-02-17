@@ -1,49 +1,13 @@
 /**
- * SNI-aware Proxy Server
+ * SNI-aware Proxy Server (Optimized for Performance)
  * Extracts SNI from TLS ClientHello for accurate hostname detection
  */
 
 import * as net from 'net';
 import * as http from 'http';
 import { URL } from 'url';
-import { Transform } from 'stream';
 import { parseSNI, isTLSClientHello } from './sni-parser';
 import { EventEmitter } from 'events';
-
-// Byte counter for tracking data transfer
-class ByteCounter {
-  bytesIn = 0;
-  bytesOut = 0;
-  private onComplete: ((bytesIn: number, bytesOut: number) => void) | null = null;
-
-  setOnComplete(callback: (bytesIn: number, bytesOut: number) => void): void {
-    this.onComplete = callback;
-  }
-
-  complete(): void {
-    if (this.onComplete) {
-      this.onComplete(this.bytesIn, this.bytesOut);
-    }
-  }
-
-  createInCounter(): Transform {
-    return new Transform({
-      transform: (chunk, _encoding, callback) => {
-        this.bytesIn += chunk.length;
-        callback(null, chunk);
-      }
-    });
-  }
-
-  createOutCounter(): Transform {
-    return new Transform({
-      transform: (chunk, _encoding, callback) => {
-        this.bytesOut += chunk.length;
-        callback(null, chunk);
-      }
-    });
-  }
-}
 
 export interface ProxyServerOptions {
   port: number;
@@ -75,6 +39,10 @@ export interface TrafficLogData {
   bytesIn: number;
   bytesOut: number;
 }
+
+// Optimized SNI extraction timeout (ms)
+const SNI_TIMEOUT_MS = 150;
+const MAX_SNI_BUFFER = 4096;
 
 export class SNIProxyServer extends EventEmitter {
   private server: http.Server | null = null;
@@ -131,7 +99,6 @@ export class SNIProxyServer extends EventEmitter {
   }
 
   private handleHttpRequest(req: http.IncomingMessage, res: http.ServerResponse): void {
-    // Parse target URL
     const targetUrl = req.url || '/';
     let hostname: string;
     let port: number;
@@ -144,12 +111,11 @@ export class SNIProxyServer extends EventEmitter {
         port = parseInt(url.port) || 80;
         path = url.pathname + url.search;
       } else {
-        // Relative URL with Host header
         hostname = req.headers.host?.split(':')[0] || 'localhost';
         port = parseInt(req.headers.host?.split(':')[1] || '80');
         path = targetUrl;
       }
-    } catch (e) {
+    } catch {
       res.writeHead(400);
       res.end('Bad Request');
       return;
@@ -165,25 +131,22 @@ export class SNIProxyServer extends EventEmitter {
 
     const decision = this.options.onRequest(requestInfo);
 
-    // Create byte counter for this request
-    const counter = new ByteCounter();
-    counter.setOnComplete((bytesIn, bytesOut) => {
-      this.emit('traffic', {
-        hostname,
-        sniHostname: null,
-        port,
-        method: req.method || 'GET',
-        action: decision.action,
-        matchedRule: decision.matchedRule,
-        bytesIn,
-        bytesOut
-      } as TrafficLogData);
-    });
+    // Log traffic immediately
+    this.emit('traffic', {
+      hostname,
+      sniHostname: null,
+      port,
+      method: req.method || 'GET',
+      action: decision.action,
+      matchedRule: decision.matchedRule,
+      bytesIn: 0,
+      bytesOut: 0
+    } as TrafficLogData);
 
     if (decision.action === 'proxy' && this.options.upstreamProxyUrl) {
-      this.forwardHttpViaProxy(req, res, hostname, port, path, counter);
+      this.forwardHttpViaProxy(req, res, hostname, port, path);
     } else {
-      this.forwardHttpDirect(req, res, hostname, port, path, counter);
+      this.forwardHttpDirect(req, res, hostname, port, path);
     }
   }
 
@@ -192,8 +155,7 @@ export class SNIProxyServer extends EventEmitter {
     res: http.ServerResponse,
     hostname: string,
     port: number,
-    path: string,
-    counter: ByteCounter
+    path: string
   ): void {
     const options: http.RequestOptions = {
       hostname,
@@ -207,19 +169,17 @@ export class SNIProxyServer extends EventEmitter {
 
     const proxyReq = http.request(options, (proxyRes) => {
       res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
-      proxyRes.pipe(counter.createInCounter()).pipe(res);
+      proxyRes.pipe(res);
     });
 
     proxyReq.on('error', () => {
-      counter.complete();
-      res.writeHead(502);
+      if (!res.headersSent) {
+        res.writeHead(502);
+      }
       res.end('Bad Gateway');
     });
 
-    res.on('finish', () => counter.complete());
-    res.on('close', () => counter.complete());
-
-    req.pipe(counter.createOutCounter()).pipe(proxyReq);
+    req.pipe(proxyReq);
   }
 
   private forwardHttpViaProxy(
@@ -227,8 +187,7 @@ export class SNIProxyServer extends EventEmitter {
     res: http.ServerResponse,
     hostname: string,
     port: number,
-    path: string,
-    counter: ByteCounter
+    path: string
   ): void {
     const proxyUrl = new URL(this.options.upstreamProxyUrl!);
     const options: http.RequestOptions = {
@@ -239,7 +198,6 @@ export class SNIProxyServer extends EventEmitter {
       headers: { ...req.headers }
     };
 
-    // Add proxy auth if present
     if (proxyUrl.username) {
       const auth = Buffer.from(`${proxyUrl.username}:${proxyUrl.password || ''}`).toString('base64');
       options.headers!['Proxy-Authorization'] = `Basic ${auth}`;
@@ -247,19 +205,17 @@ export class SNIProxyServer extends EventEmitter {
 
     const proxyReq = http.request(options, (proxyRes) => {
       res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
-      proxyRes.pipe(counter.createInCounter()).pipe(res);
+      proxyRes.pipe(res);
     });
 
     proxyReq.on('error', () => {
-      counter.complete();
-      res.writeHead(502);
+      if (!res.headersSent) {
+        res.writeHead(502);
+      }
       res.end('Bad Gateway');
     });
 
-    res.on('finish', () => counter.complete());
-    res.on('close', () => counter.complete());
-
-    req.pipe(counter.createOutCounter()).pipe(proxyReq);
+    req.pipe(proxyReq);
   }
 
   private handleConnectRequest(
@@ -271,15 +227,17 @@ export class SNIProxyServer extends EventEmitter {
     clientSocket.on('close', () => this.connections.delete(clientSocket));
     clientSocket.on('error', () => this.connections.delete(clientSocket));
 
-    // Parse target from CONNECT request
     const [hostname, portStr] = (req.url || '').split(':');
     const port = parseInt(portStr) || 443;
 
     // Tell client we're ready to tunnel
-    clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
-
-    // Wait for first data to extract SNI
-    this.waitForSNI(clientSocket, head, hostname, port);
+    if (clientSocket.writable) {
+      clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+      // Wait for first data to extract SNI
+      this.waitForSNI(clientSocket, head, hostname, port);
+    } else {
+      clientSocket.destroy();
+    }
   }
 
   private waitForSNI(
@@ -288,56 +246,79 @@ export class SNIProxyServer extends EventEmitter {
     connectHostname: string,
     port: number
   ): void {
-    let buffer = head.length > 0 ? head : Buffer.alloc(0);
+    const buffers: Buffer[] = head.length > 0 ? [head] : [];
+    let totalLength = head.length;
     let sniExtracted = false;
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    const cleanup = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      clientSocket.removeListener('data', onData);
+      clientSocket.removeListener('close', onClose);
+      clientSocket.removeListener('error', onClose);
+    };
+
+    const finalize = (sniHostname: string | null) => {
+      if (sniExtracted) return;
+      sniExtracted = true;
+      cleanup();
+
+      // Don't proceed if socket is destroyed
+      if (clientSocket.destroyed) return;
+
+      const buffer = buffers.length === 0
+        ? Buffer.alloc(0)
+        : buffers.length === 1
+          ? buffers[0]
+          : Buffer.concat(buffers, totalLength);
+
+      this.establishTunnel(clientSocket, buffer, connectHostname, port, sniHostname);
+    };
+
+    const onClose = () => {
+      if (!sniExtracted) {
+        sniExtracted = true;
+        cleanup();
+      }
+    };
 
     const onData = (data: Buffer) => {
-      buffer = Buffer.concat([buffer, data]);
+      buffers.push(data);
+      totalLength += data.length;
 
-      // Try to parse SNI once we have enough data
-      if (!sniExtracted && buffer.length >= 5) {
-        if (isTLSClientHello(buffer)) {
-          // Wait for complete ClientHello (check record length)
-          const recordLength = (buffer[3] << 8) | buffer[4];
-          if (buffer.length >= 5 + recordLength) {
-            sniExtracted = true;
-            clientSocket.removeListener('data', onData);
+      if (totalLength >= 5) {
+        const firstChunk = buffers[0];
 
+        if (isTLSClientHello(firstChunk)) {
+          const recordLength = (firstChunk[3] << 8) | firstChunk[4];
+          if (totalLength >= 5 + recordLength) {
+            const buffer = buffers.length === 1 ? firstChunk : Buffer.concat(buffers, totalLength);
             const sniResult = parseSNI(buffer);
-            this.establishTunnel(
-              clientSocket,
-              buffer,
-              connectHostname,
-              port,
-              sniResult.hostname
-            );
+            finalize(sniResult.hostname);
+            return;
           }
         } else {
-          // Not TLS, just forward
-          sniExtracted = true;
-          clientSocket.removeListener('data', onData);
-          this.establishTunnel(clientSocket, buffer, connectHostname, port, null);
+          finalize(null);
+          return;
         }
       }
 
-      // Timeout - if we've waited too long, proceed without SNI
-      if (!sniExtracted && buffer.length > 8192) {
-        sniExtracted = true;
-        clientSocket.removeListener('data', onData);
-        this.establishTunnel(clientSocket, buffer, connectHostname, port, null);
+      if (totalLength > MAX_SNI_BUFFER) {
+        finalize(null);
       }
     };
 
     clientSocket.on('data', onData);
+    clientSocket.on('close', onClose);
+    clientSocket.on('error', onClose);
 
-    // Timeout fallback
-    setTimeout(() => {
-      if (!sniExtracted) {
-        sniExtracted = true;
-        clientSocket.removeListener('data', onData);
-        this.establishTunnel(clientSocket, buffer, connectHostname, port, null);
-      }
-    }, 1000);
+    // Timeout - proceed without SNI
+    timeoutId = setTimeout(() => {
+      finalize(null);
+    }, SNI_TIMEOUT_MS);
   }
 
   private establishTunnel(
@@ -347,7 +328,6 @@ export class SNIProxyServer extends EventEmitter {
     port: number,
     sniHostname: string | null
   ): void {
-    // Use SNI hostname if available, otherwise fall back to CONNECT hostname
     const effectiveHostname = sniHostname || connectHostname;
 
     const requestInfo: RequestInfo = {
@@ -360,28 +340,22 @@ export class SNIProxyServer extends EventEmitter {
 
     const decision = this.options.onRequest(requestInfo);
 
-    // Create byte counter for this tunnel
-    const counter = new ByteCounter();
-    counter.setOnComplete((bytesIn, bytesOut) => {
-      this.emit('traffic', {
-        hostname: connectHostname,
-        sniHostname,
-        port,
-        method: 'CONNECT',
-        action: decision.action,
-        matchedRule: decision.matchedRule,
-        bytesIn,
-        bytesOut
-      } as TrafficLogData);
-    });
-
-    // Count initial data as outbound
-    counter.bytesOut += initialData.length;
+    // Log traffic immediately when tunnel is established (don't wait for close)
+    this.emit('traffic', {
+      hostname: connectHostname,
+      sniHostname,
+      port,
+      method: 'CONNECT',
+      action: decision.action,
+      matchedRule: decision.matchedRule,
+      bytesIn: 0,
+      bytesOut: initialData.length
+    } as TrafficLogData);
 
     if (decision.action === 'proxy' && this.options.upstreamProxyUrl) {
-      this.tunnelViaProxy(clientSocket, initialData, connectHostname, port, counter);
+      this.tunnelViaProxy(clientSocket, initialData, connectHostname, port);
     } else {
-      this.tunnelDirect(clientSocket, initialData, effectiveHostname, port, counter);
+      this.tunnelDirect(clientSocket, initialData, effectiveHostname, port);
     }
   }
 
@@ -389,32 +363,22 @@ export class SNIProxyServer extends EventEmitter {
     clientSocket: net.Socket,
     initialData: Buffer,
     hostname: string,
-    port: number,
-    counter: ByteCounter
+    port: number
   ): void {
     const serverSocket = net.connect(port, hostname, () => {
-      // Send initial data (ClientHello) that we buffered
       if (initialData.length > 0) {
         serverSocket.write(initialData);
       }
 
-      // Pipe bidirectionally with byte counting
-      clientSocket.pipe(counter.createOutCounter()).pipe(serverSocket);
-      serverSocket.pipe(counter.createInCounter()).pipe(clientSocket);
+      // Use pipe for proper backpressure handling
+      clientSocket.pipe(serverSocket);
+      serverSocket.pipe(clientSocket);
     });
 
-    serverSocket.on('error', () => {
-      counter.complete();
-      clientSocket.destroy();
-    });
-
-    clientSocket.on('error', () => {
-      counter.complete();
-      serverSocket.destroy();
-    });
-
-    clientSocket.on('close', () => counter.complete());
-    serverSocket.on('close', () => counter.complete());
+    serverSocket.on('error', () => clientSocket.destroy());
+    clientSocket.on('error', () => serverSocket.destroy());
+    clientSocket.on('close', () => serverSocket.destroy());
+    serverSocket.on('close', () => clientSocket.destroy());
 
     this.connections.add(serverSocket);
     serverSocket.on('close', () => this.connections.delete(serverSocket));
@@ -424,19 +388,16 @@ export class SNIProxyServer extends EventEmitter {
     clientSocket: net.Socket,
     initialData: Buffer,
     hostname: string,
-    port: number,
-    counter: ByteCounter
+    port: number
   ): void {
     const proxyUrl = new URL(this.options.upstreamProxyUrl!);
     const proxyHost = proxyUrl.hostname;
     const proxyPort = parseInt(proxyUrl.port) || 8080;
 
     const proxySocket = net.connect(proxyPort, proxyHost, () => {
-      // Build CONNECT request to upstream proxy
       let connectReq = `CONNECT ${hostname}:${port} HTTP/1.1\r\n`;
       connectReq += `Host: ${hostname}:${port}\r\n`;
 
-      // Add proxy authentication if present
       if (proxyUrl.username) {
         const auth = Buffer.from(`${proxyUrl.username}:${proxyUrl.password || ''}`).toString('base64');
         connectReq += `Proxy-Authorization: Basic ${auth}\r\n`;
@@ -447,56 +408,50 @@ export class SNIProxyServer extends EventEmitter {
     });
 
     let connected = false;
-    let responseBuffer = '';
+    const responseChunks: Buffer[] = [];
+    const HEADER_END = Buffer.from('\r\n\r\n');
 
-    proxySocket.on('data', (data) => {
+    const onProxyData = (data: Buffer) => {
       if (!connected) {
-        responseBuffer += data.toString();
+        responseChunks.push(data);
+        const responseBuffer = Buffer.concat(responseChunks);
 
-        // Check for end of HTTP response headers
-        const headerEnd = responseBuffer.indexOf('\r\n\r\n');
-        if (headerEnd !== -1) {
-          const statusLine = responseBuffer.split('\r\n')[0];
+        const headerEndIndex = responseBuffer.indexOf(HEADER_END);
+        if (headerEndIndex !== -1) {
+          const headerPart = responseBuffer.subarray(0, headerEndIndex).toString('ascii');
+          const statusLine = headerPart.split('\r\n')[0];
+
           if (statusLine.includes('200')) {
             connected = true;
+            proxySocket.removeListener('data', onProxyData);
 
-            // Send initial data (ClientHello) that we buffered
             if (initialData.length > 0) {
               proxySocket.write(initialData);
             }
 
-            // Pipe bidirectionally with byte counting
-            clientSocket.pipe(counter.createOutCounter()).pipe(proxySocket);
-            proxySocket.pipe(counter.createInCounter()).pipe(clientSocket);
+            // Use pipe for proper backpressure handling
+            clientSocket.pipe(proxySocket);
+            proxySocket.pipe(clientSocket);
 
-            // Handle any data after headers
-            const remaining = responseBuffer.slice(headerEnd + 4);
+            // Handle any binary data after headers (use Buffer, not string)
+            const remaining = responseBuffer.subarray(headerEndIndex + 4);
             if (remaining.length > 0) {
-              counter.bytesIn += remaining.length;
               clientSocket.write(remaining);
             }
           } else {
-            // Proxy rejected the connection
-            counter.complete();
             clientSocket.destroy();
             proxySocket.destroy();
           }
         }
       }
-    });
+    };
 
-    proxySocket.on('error', () => {
-      counter.complete();
-      clientSocket.destroy();
-    });
+    proxySocket.on('data', onProxyData);
 
-    clientSocket.on('error', () => {
-      counter.complete();
-      proxySocket.destroy();
-    });
-
-    clientSocket.on('close', () => counter.complete());
-    proxySocket.on('close', () => counter.complete());
+    proxySocket.on('error', () => clientSocket.destroy());
+    clientSocket.on('error', () => proxySocket.destroy());
+    clientSocket.on('close', () => proxySocket.destroy());
+    proxySocket.on('close', () => clientSocket.destroy());
 
     this.connections.add(proxySocket);
     proxySocket.on('close', () => this.connections.delete(proxySocket));
