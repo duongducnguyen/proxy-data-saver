@@ -19,7 +19,7 @@ export function PeriodSelector({ period, onChange, loading }: PeriodSelectorProp
   ];
 
   return (
-    <div className="flex bg-neutral-900 rounded p-0.5 gap-0.5">
+    <div className="flex bg-neutral-200 dark:bg-neutral-900 rounded p-0.5 gap-0.5">
       {periods.map((p) => (
         <button
           key={p.id}
@@ -27,8 +27,8 @@ export function PeriodSelector({ period, onChange, loading }: PeriodSelectorProp
           disabled={loading}
           className={`px-2.5 py-1 text-xs font-medium rounded transition-colors ${
             period === p.id
-              ? 'bg-neutral-800 text-neutral-100'
-              : 'text-neutral-500 hover:text-neutral-300'
+              ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
+              : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
           } ${loading ? 'opacity-50' : ''}`}
         >
           {t(p.labelKey)}

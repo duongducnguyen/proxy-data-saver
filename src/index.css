@@ -10,7 +10,8 @@
   }
 
   body {
-    @apply bg-neutral-950 text-neutral-200 font-sans antialiased;
+    @apply bg-neutral-50 text-neutral-800 font-sans antialiased;
+    @apply dark:bg-neutral-950 dark:text-neutral-200;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
@@ -31,32 +32,42 @@
   }
 
   .btn-primary {
-    @apply bg-neutral-100 text-neutral-900;
-    @apply hover:bg-white;
+    @apply bg-neutral-900 text-neutral-100;
+    @apply hover:bg-neutral-800;
+    @apply dark:bg-neutral-100 dark:text-neutral-900;
+    @apply dark:hover:bg-white;
   }
 
   .btn-secondary {
-    @apply bg-neutral-800 text-neutral-300;
-    @apply hover:bg-neutral-750 hover:text-neutral-100;
+    @apply bg-neutral-200 text-neutral-700;
+    @apply hover:bg-neutral-300 hover:text-neutral-900;
+    @apply dark:bg-neutral-800 dark:text-neutral-300;
+    @apply dark:hover:bg-neutral-750 dark:hover:text-neutral-100;
   }
 
   .btn-ghost {
-    @apply bg-transparent text-neutral-400;
-    @apply hover:bg-neutral-800 hover:text-neutral-200;
+    @apply bg-transparent text-neutral-500;
+    @apply hover:bg-neutral-200 hover:text-neutral-800;
+    @apply dark:hover:bg-neutral-800 dark:hover:text-neutral-200;
   }
 
   .btn-danger {
-    @apply bg-transparent text-danger-text;
+    @apply bg-transparent text-danger;
     @apply hover:bg-danger-muted;
+    @apply dark:text-danger-text;
   }
 
   /* Minimalist input */
   .input {
     @apply w-full px-3 py-2;
-    @apply bg-neutral-900 text-neutral-100;
-    @apply border border-neutral-800 rounded;
-    @apply placeholder-neutral-600;
-    @apply focus:outline-none focus:border-neutral-600;
+    @apply bg-white text-neutral-900;
+    @apply border border-neutral-300 rounded;
+    @apply placeholder-neutral-400;
+    @apply focus:outline-none focus:border-neutral-500;
+    @apply dark:bg-neutral-900 dark:text-neutral-100;
+    @apply dark:border-neutral-800;
+    @apply dark:placeholder-neutral-600;
+    @apply dark:focus:border-neutral-600;
     @apply transition-colors duration-150;
   }
 
@@ -66,17 +77,20 @@
 
   /* Clean label */
   .label {
-    @apply block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5;
+    @apply block text-xs font-medium text-neutral-600 uppercase tracking-wider mb-1.5;
+    @apply dark:text-neutral-500;
   }
 
   /* Minimal card - no heavy borders */
   .card {
-    @apply bg-neutral-900/50 rounded-lg p-5;
+    @apply bg-neutral-100 rounded-lg p-5;
+    @apply dark:bg-neutral-900/50;
   }
 
   /* Subtle divider */
   .divider {
-    @apply border-t border-neutral-800/50;
+    @apply border-t border-neutral-200;
+    @apply dark:border-neutral-800/50;
   }
 
   /* Badge - minimal */
@@ -85,11 +99,13 @@
   }
 
   .badge-neutral {
-    @apply bg-neutral-800 text-neutral-400;
+    @apply bg-neutral-200 text-neutral-600;
+    @apply dark:bg-neutral-800 dark:text-neutral-400;
   }
 
   .badge-success {
-    @apply bg-success-muted text-success-text;
+    @apply bg-success-muted text-green-700;
+    @apply dark:text-success-text;
   }
 
   .badge-accent {
@@ -106,11 +122,12 @@
   }
 
   .status-dot-inactive {
-    @apply bg-neutral-600;
+    @apply bg-neutral-400;
+    @apply dark:bg-neutral-600;
   }
 }
 
-/* Minimal scrollbar */
+/* Minimal scrollbar - light mode */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -121,11 +138,20 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
+  background: #d4d4d4;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}
+
+/* Minimal scrollbar - dark mode */
+.dark ::-webkit-scrollbar-thumb {
+  background: #333;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
   background: #444;
 }
 

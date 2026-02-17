@@ -75,8 +75,8 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
   const isValid = name && pattern && !patternError && !validating;
 
   return (
-    <form onSubmit={handleSubmit} className="bg-neutral-900/50 rounded-lg p-4 space-y-4">
-      <h3 className="text-sm font-medium text-neutral-200">
+    <form onSubmit={handleSubmit} className="bg-neutral-100 dark:bg-neutral-900/50 rounded-lg p-4 space-y-4">
+      <h3 className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
         {rule ? t('rules.editRule') : t('rules.addRule')}
       </h3>
 
@@ -115,9 +115,9 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
             required
           />
           {patternError && (
-            <p className="text-danger-text text-xs mt-1">{patternError}</p>
+            <p className="text-danger dark:text-danger-text text-xs mt-1">{patternError}</p>
           )}
-          <p className="text-xs text-neutral-600 mt-1">
+          <p className="text-xs text-neutral-500 dark:text-neutral-600 mt-1">
             {t('rules.form.patternHint')}
           </p>
         </div>
@@ -131,7 +131,7 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
             onChange={(e) => setPriority(parseInt(e.target.value) || 100)}
             min={1}
           />
-          <p className="text-xs text-neutral-600 mt-1">
+          <p className="text-xs text-neutral-500 dark:text-neutral-600 mt-1">
             {t('rules.form.priorityHint')}
           </p>
         </div>
@@ -140,11 +140,11 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
           <label className="flex items-center gap-2 cursor-pointer mt-6">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-neutral-700 bg-neutral-900 text-accent focus:ring-accent/50"
+              className="w-4 h-4 rounded border-neutral-400 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-accent focus:ring-accent/50"
               checked={enabled}
               onChange={(e) => setEnabled(e.target.checked)}
             />
-            <span className="text-sm text-neutral-400">{t('rules.form.enabled')}</span>
+            <span className="text-sm text-neutral-600 dark:text-neutral-400">{t('rules.form.enabled')}</span>
           </label>
         </div>
       </div>

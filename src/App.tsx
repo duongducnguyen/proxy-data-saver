@@ -7,6 +7,7 @@ import { useProxy } from './hooks/useProxy';
 import { useRules } from './hooks/useRules';
 import { useTraffic } from './hooks/useTraffic';
 import { I18nProvider, useI18n, Language } from './i18n';
+import { ThemeProvider, useTheme, Theme } from './contexts/ThemeContext';
 
 type Tab = 'dashboard' | 'proxy' | 'rules' | 'traffic';
 
@@ -17,11 +18,61 @@ function LanguageSwitcher() {
     <select
       value={language}
       onChange={(e) => setLanguage(e.target.value as Language)}
-      className="bg-transparent text-neutral-500 text-xs px-1 py-0.5 rounded border-0 focus:outline-none cursor-pointer hover:text-neutral-300 transition-colors"
+      className="bg-transparent text-neutral-500 text-xs px-1 py-0.5 rounded border-0 focus:outline-none cursor-pointer hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
     >
-      <option value="en" className="bg-neutral-900">{t('language.en')}</option>
-      <option value="vi" className="bg-neutral-900">{t('language.vi')}</option>
+      <option value="en" className="bg-white dark:bg-neutral-900">{t('language.en')}</option>
+      <option value="vi" className="bg-white dark:bg-neutral-900">{t('language.vi')}</option>
     </select>
+  );
+}
+
+function ThemeSwitcher() {
+  const { theme, toggleTheme } = useTheme();
+
+  const getIcon = () => {
+    switch (theme) {
+      case 'light':
+        // Sun icon
+        return (
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="5" />
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          </svg>
+        );
+      case 'dark':
+        // Moon icon
+        return (
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        );
+      case 'system':
+        // Monitor icon
+        return (
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+            <path d="M8 21h8M12 17v4" />
+          </svg>
+        );
+    }
+  };
+
+  const getTitle = () => {
+    switch (theme) {
+      case 'light': return 'Light mode';
+      case 'dark': return 'Dark mode';
+      case 'system': return 'System';
+    }
+  };
+
+  return (
+    <button
+      onClick={toggleTheme}
+      title={getTitle()}
+      className="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors p-1"
+    >
+      {getIcon()}
+    </button>
   );
 }
 
@@ -38,7 +89,7 @@ function WindowControls() {
     <div className="flex items-center">
       <button
         onClick={() => window.electronAPI?.window.minimize()}
-        className="w-10 h-7 flex items-center justify-center text-neutral-500 hover:bg-neutral-800 hover:text-neutral-300 transition-colors"
+        className="w-10 h-7 flex items-center justify-center text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
       >
         <svg className="w-2.5 h-0.5" fill="currentColor" viewBox="0 0 10 2">
           <rect width="10" height="2" />
@@ -46,7 +97,7 @@ function WindowControls() {
       </button>
       <button
         onClick={() => window.electronAPI?.window.maximize()}
-        className="w-10 h-7 flex items-center justify-center text-neutral-500 hover:bg-neutral-800 hover:text-neutral-300 transition-colors"
+        className="w-10 h-7 flex items-center justify-center text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
       >
         {isMaximized ? (
           <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 10 10" stroke="currentColor" strokeWidth="1.2">
@@ -61,7 +112,7 @@ function WindowControls() {
       </button>
       <button
         onClick={() => window.electronAPI?.window.close()}
-        className="w-10 h-7 flex items-center justify-center text-neutral-500 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+        className="w-10 h-7 flex items-center justify-center text-neutral-500 hover:bg-red-500/20 hover:text-red-500 dark:hover:text-red-400 transition-colors"
       >
         <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 10 10" stroke="currentColor" strokeWidth="1.5">
           <path d="M1 1l8 8M9 1L1 9" />
@@ -90,18 +141,19 @@ function AppContent() {
   ];
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-neutral-950">
+    <div className="h-screen flex flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
       {/* Titlebar */}
       <div
-        className="flex-shrink-0 h-7 flex items-center justify-between select-none border-b border-neutral-900"
+        className="flex-shrink-0 h-7 flex items-center justify-between select-none border-b border-neutral-200 dark:border-neutral-900"
         style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
       >
         <div className="flex items-center gap-2 px-3">
-          <span className="text-2xs text-neutral-600 font-medium tracking-wide uppercase">
+          <span className="text-2xs text-neutral-500 dark:text-neutral-600 font-medium tracking-wide uppercase">
             {t('app.title')}
           </span>
         </div>
-        <div style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+        <div className="flex items-center" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+          <ThemeSwitcher />
           <WindowControls />
         </div>
       </div>
@@ -117,14 +169,14 @@ function AppContent() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
                   activeTab === tab.id
-                    ? 'text-neutral-100 bg-neutral-800'
-                    : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900'
+                    ? 'text-neutral-900 bg-neutral-200 dark:text-neutral-100 dark:bg-neutral-800'
+                    : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:hover:text-neutral-300 dark:hover:bg-neutral-900'
                 }`}
               >
                 {tab.label}
                 {tab.count !== undefined && (
                   <span className={`ml-1.5 text-xs ${
-                    activeTab === tab.id ? 'text-neutral-400' : 'text-neutral-600'
+                    activeTab === tab.id ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-400 dark:text-neutral-600'
                   }`}>
                     {tab.count}
                   </span>
@@ -195,12 +247,12 @@ function AppContent() {
       </main>
 
       {/* Footer */}
-      <footer className="flex-shrink-0 px-6 py-2 border-t border-neutral-900">
-        <div className="flex items-center justify-between text-2xs text-neutral-600">
+      <footer className="flex-shrink-0 px-6 py-2 border-t border-neutral-200 dark:border-neutral-900">
+        <div className="flex items-center justify-between text-2xs text-neutral-500 dark:text-neutral-600">
           <div>
             {proxy.status.running && proxy.status.localIps.length > 0 && (
               <span>
-                LAN: <code className="text-neutral-400 font-mono">{proxy.status.localIps[0]}</code>
+                LAN: <code className="text-neutral-700 dark:text-neutral-400 font-mono">{proxy.status.localIps[0]}</code>
               </span>
             )}
           </div>
@@ -216,9 +268,11 @@ function AppContent() {
 
 function App() {
   return (
-    <I18nProvider>
-      <AppContent />
-    </I18nProvider>
+    <ThemeProvider>
+      <I18nProvider>
+        <AppContent />
+      </I18nProvider>
+    </ThemeProvider>
   );
 }
 

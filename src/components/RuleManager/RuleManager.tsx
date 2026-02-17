@@ -85,7 +85,7 @@ export function RuleManager({
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
-        <div className="text-neutral-600 text-sm">Loading...</div>
+        <div className="text-neutral-500 dark:text-neutral-600 text-sm">Loading...</div>
       </div>
     );
   }
@@ -94,7 +94,7 @@ export function RuleManager({
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-neutral-100">{t('rules.title')}</h2>
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{t('rules.title')}</h2>
         <div className="flex gap-2">
           <button onClick={() => setShowTester(!showTester)} className="btn btn-ghost">
             {showTester ? t('rules.hideTester') : t('rules.testRules')}
@@ -108,8 +108,8 @@ export function RuleManager({
       {/* Error */}
       {error && (
         <div className="flex-shrink-0 mb-4 bg-danger-muted rounded-lg p-3 flex justify-between items-center">
-          <span className="text-danger-text text-sm">{error}</span>
-          <button onClick={onClearError} className="text-danger-text hover:text-red-300 text-sm">
+          <span className="text-danger dark:text-danger-text text-sm">{error}</span>
+          <button onClick={onClearError} className="text-danger dark:text-danger-text hover:text-red-600 dark:hover:text-red-300 text-sm">
             {t('rules.dismiss')}
           </button>
         </div>
@@ -136,14 +136,14 @@ export function RuleManager({
       )}
 
       {/* Info */}
-      <div className="flex-shrink-0 text-xs text-neutral-600 mb-3">
+      <div className="flex-shrink-0 text-xs text-neutral-500 dark:text-neutral-600 mb-3">
         {t('rules.rulesInfo')}
       </div>
 
       {/* Rules List */}
       <div className="flex-1 overflow-y-auto">
         {rules.length === 0 ? (
-          <div className="text-center text-neutral-600 py-12 text-sm">
+          <div className="text-center text-neutral-500 dark:text-neutral-600 py-12 text-sm">
             {t('rules.noRules')}
           </div>
         ) : (

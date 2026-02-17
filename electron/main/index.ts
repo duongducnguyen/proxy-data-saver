@@ -9,6 +9,26 @@ let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let isQuitting = false;
 let windowControlsRegistered = false;
+let currentTheme: 'light' | 'dark' = 'dark';
+
+function updateTrayIcon(theme: 'light' | 'dark'): void {
+  if (!tray) return;
+
+  // Use opposite color for visibility: light icon on dark system tray, dark icon on light
+  // For dark app theme, Windows tray is usually dark, so use light icon
+  // For light app theme, we still use light icon since Windows tray is typically dark
+  const iconName = theme === 'dark' ? 'logo-light.png' : 'logo-dark.png';
+  const iconPath = join(__dirname, '../../resources/', iconName);
+
+  try {
+    const icon = nativeImage.createFromPath(iconPath);
+    if (!icon.isEmpty()) {
+      tray.setImage(icon);
+    }
+  } catch (err) {
+    console.error('Failed to update tray icon:', err);
+  }
+}
 
 function createWindow(): void {
   // 16:9 aspect ratio
@@ -28,7 +48,7 @@ function createWindow(): void {
       contextIsolation: true,
       sandbox: false
     },
-    icon: join(__dirname, '../../resources/icon.png'),
+    icon: join(__dirname, '../../resources/logo-dark.png'),
     show: false,
     backgroundColor: '#111827'
   });
@@ -89,6 +109,11 @@ function createWindow(): void {
     ipcMain.handle('window:isMaximized', () => {
       return mainWindow?.isMaximized() ?? false;
     });
+
+    ipcMain.on('theme:set', (_event, theme: 'light' | 'dark') => {
+      currentTheme = theme;
+      updateTrayIcon(theme);
+    });
   }
 
   // Send maximize state changes to renderer
@@ -119,14 +144,13 @@ function createWindow(): void {
 }
 
 function createTray(): void {
-  const iconPath = join(__dirname, '../../resources/icon.png');
+  // Use light logo for tray (app is dark theme, Windows tray is usually dark)
+  const iconPath = join(__dirname, '../../resources/logo-light.png');
 
-  // Create a simple tray icon
   let icon: nativeImage;
   try {
     icon = nativeImage.createFromPath(iconPath);
     if (icon.isEmpty()) {
-      // Create a simple 16x16 icon if file not found
       icon = nativeImage.createEmpty();
     }
   } catch {

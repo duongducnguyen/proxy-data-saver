@@ -84,6 +84,11 @@ const electronAPI = {
     }
   },
 
+  // Theme management
+  theme: {
+    setTheme: (theme: 'light' | 'dark'): void => ipcRenderer.send('theme:set', theme)
+  },
+
   // Stats management
   stats: {
     get: (period: 'today' | 'week' | 'month' | 'all', localPort?: number): Promise<AggregatedStats> =>

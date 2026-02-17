@@ -90,8 +90,8 @@ export function ProxyConfig({
         {/* Header */}
         <div className="flex-shrink-0 flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold text-neutral-100">{t('proxy.titleActive')}</h2>
-            <span className="flex items-center gap-2 text-xs text-success-text">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{t('proxy.titleActive')}</h2>
+            <span className="flex items-center gap-2 text-xs text-green-600 dark:text-success-text">
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
               {runningCount}/{status.proxies.length} {t('proxy.status.running')}
             </span>
@@ -109,8 +109,8 @@ export function ProxyConfig({
         {/* Error */}
         {error && (
           <div className="flex-shrink-0 mb-4 bg-danger-muted rounded-lg p-3 flex justify-between items-center">
-            <span className="text-danger-text text-sm">{error}</span>
-            <button onClick={onClearError} className="text-danger-text hover:text-red-300 text-sm">
+            <span className="text-danger dark:text-danger-text text-sm">{error}</span>
+            <button onClick={onClearError} className="text-danger dark:text-danger-text hover:text-red-600 dark:hover:text-red-300 text-sm">
               {t('proxy.dismiss')}
             </button>
           </div>
@@ -120,7 +120,7 @@ export function ProxyConfig({
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-neutral-950">
+              <thead className="sticky top-0 bg-neutral-50 dark:bg-neutral-950">
                 <tr className="text-left text-neutral-500 text-xs uppercase tracking-wider">
                   <th className="pb-3 font-medium">{t('proxy.table.localPort')}</th>
                   <th className="pb-3 font-medium">{t('proxy.table.upstream')}</th>
@@ -128,21 +128,21 @@ export function ProxyConfig({
                   <th className="pb-3 font-medium">{t('proxy.table.lanAddress')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-900">
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-900">
                 {status.proxies.map((proxy) => (
                   <tr key={proxy.id} className="group">
                     <td className="py-3">
-                      <span className="font-mono text-neutral-100 text-base">{proxy.localPort}</span>
+                      <span className="font-mono text-neutral-900 dark:text-neutral-100 text-base">{proxy.localPort}</span>
                     </td>
                     <td className="py-3">
-                      <div className="text-neutral-300 font-mono text-sm">{proxy.host}:{proxy.port}</div>
+                      <div className="text-neutral-700 dark:text-neutral-300 font-mono text-sm">{proxy.host}:{proxy.port}</div>
                       {proxy.username && (
-                        <div className="text-xs text-neutral-600">{proxy.username}</div>
+                        <div className="text-xs text-neutral-500 dark:text-neutral-600">{proxy.username}</div>
                       )}
                     </td>
                     <td className="py-3">
                       <span className={`inline-flex items-center gap-1.5 text-xs ${
-                        proxy.running ? 'text-success-text' : 'text-danger-text'
+                        proxy.running ? 'text-green-600 dark:text-success-text' : 'text-danger dark:text-danger-text'
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${
                           proxy.running ? 'bg-success' : 'bg-danger'
@@ -153,12 +153,12 @@ export function ProxyConfig({
                     <td className="py-3">
                       {status.localIps[0] && (
                         <div className="flex items-center gap-2">
-                          <code className="text-xs text-neutral-400 font-mono">
+                          <code className="text-xs text-neutral-600 dark:text-neutral-400 font-mono">
                             {status.localIps[0]}:{proxy.localPort}
                           </code>
                           <button
                             onClick={() => navigator.clipboard.writeText(`${status.localIps[0]}:${proxy.localPort}`)}
-                            className="text-xs text-neutral-600 hover:text-neutral-400 transition-colors opacity-0 group-hover:opacity-100"
+                            className="text-xs text-neutral-500 dark:text-neutral-600 hover:text-neutral-700 dark:hover:text-neutral-400 transition-colors opacity-0 group-hover:opacity-100"
                           >
                             {t('proxy.actions.copy')}
                           </button>
@@ -173,7 +173,7 @@ export function ProxyConfig({
         </div>
 
         {/* Footer hint */}
-        <div className="flex-shrink-0 pt-4 text-xs text-neutral-600">
+        <div className="flex-shrink-0 pt-4 text-xs text-neutral-500 dark:text-neutral-600">
           {t('proxy.hints.configureDevices')}
         </div>
       </div>
@@ -186,8 +186,8 @@ export function ProxyConfig({
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-neutral-100">{t('proxy.title')}</h2>
-          <span className="text-xs text-neutral-600">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{t('proxy.title')}</h2>
+          <span className="text-xs text-neutral-500 dark:text-neutral-600">
             {proxyCount} {t('proxy.proxyCount')}
           </span>
         </div>
@@ -215,8 +215,8 @@ export function ProxyConfig({
       {/* Error */}
       {error && (
         <div className="flex-shrink-0 mb-4 bg-danger-muted rounded-lg p-3 flex justify-between items-center">
-          <span className="text-danger-text text-sm">{error}</span>
-          <button onClick={onClearError} className="text-danger-text hover:text-red-300 text-sm">
+          <span className="text-danger dark:text-danger-text text-sm">{error}</span>
+          <button onClick={onClearError} className="text-danger dark:text-danger-text hover:text-red-600 dark:hover:text-red-300 text-sm">
             {t('proxy.dismiss')}
           </button>
         </div>
@@ -234,7 +234,7 @@ export function ProxyConfig({
       </div>
 
       {/* Settings */}
-      <div className="flex-shrink-0 grid grid-cols-1 md:grid-cols-3 gap-5 pt-5 border-t border-neutral-900">
+      <div className="flex-shrink-0 grid grid-cols-1 md:grid-cols-3 gap-5 pt-5 border-t border-neutral-200 dark:border-neutral-900">
         <div>
           <label className="label">{t('proxy.settings.startPort')}</label>
           <input
@@ -245,7 +245,7 @@ export function ProxyConfig({
             min={1024}
             max={65535}
           />
-          <p className="text-xs text-neutral-600 mt-1.5">
+          <p className="text-xs text-neutral-500 dark:text-neutral-600 mt-1.5">
             {t('proxy.settings.portsRange')}: {localConfig.startPort} - {localConfig.startPort + Math.max(0, proxyCount - 1)}
           </p>
         </div>
@@ -260,7 +260,7 @@ export function ProxyConfig({
             <option value="proxy">{t('proxy.settings.useProxy')}</option>
             <option value="direct">{t('proxy.settings.directConnection')}</option>
           </select>
-          <p className="text-xs text-neutral-600 mt-1.5">
+          <p className="text-xs text-neutral-500 dark:text-neutral-600 mt-1.5">
             {t('proxy.settings.whenNoRule')}
           </p>
         </div>
@@ -269,20 +269,20 @@ export function ProxyConfig({
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-neutral-700 bg-neutral-900 text-accent focus:ring-accent/50"
+              className="w-4 h-4 rounded border-neutral-400 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-accent focus:ring-accent/50"
               checked={localConfig.autoStart}
               onChange={(e) => handleChange('autoStart', e.target.checked)}
             />
-            <span className="text-sm text-neutral-400">{t('proxy.settings.autoStart')}</span>
+            <span className="text-sm text-neutral-600 dark:text-neutral-400">{t('proxy.settings.autoStart')}</span>
           </label>
         </div>
       </div>
 
       {/* LAN IPs */}
       {status.localIps.length > 0 && (
-        <div className="flex-shrink-0 mt-4 text-xs text-neutral-600">
+        <div className="flex-shrink-0 mt-4 text-xs text-neutral-500 dark:text-neutral-600">
           {t('proxy.hints.yourLanIp')}: {status.localIps.map(ip => (
-            <code key={ip} className="text-neutral-400 font-mono ml-1">{ip}</code>
+            <code key={ip} className="text-neutral-600 dark:text-neutral-400 font-mono ml-1">{ip}</code>
           ))}
         </div>
       )}

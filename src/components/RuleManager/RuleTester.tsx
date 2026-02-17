@@ -41,8 +41,8 @@ export function RuleTester({ onTest, rules }: Props) {
   const matchingRule = results?.find((r) => r.matches)?.rule;
 
   return (
-    <div className="bg-neutral-900/50 rounded-lg p-4 space-y-4">
-      <h3 className="text-sm font-medium text-neutral-200">{t('rules.tester.title')}</h3>
+    <div className="bg-neutral-100 dark:bg-neutral-900/50 rounded-lg p-4 space-y-4">
+      <h3 className="text-sm font-medium text-neutral-800 dark:text-neutral-200">{t('rules.tester.title')}</h3>
 
       <div className="flex gap-2">
         <input
@@ -64,13 +64,13 @@ export function RuleTester({ onTest, rules }: Props) {
 
       {results && (
         <div className="space-y-3">
-          <div className={`p-3 rounded-lg ${matchingRule ? 'bg-neutral-800' : 'bg-neutral-800/50'}`}>
+          <div className={`p-3 rounded-lg ${matchingRule ? 'bg-neutral-200 dark:bg-neutral-800' : 'bg-neutral-200/50 dark:bg-neutral-800/50'}`}>
             <span className="text-sm">
               {matchingRule ? (
                 <>
-                  {t('rules.tester.matchedRule')}: <span className="text-neutral-100 font-medium">{matchingRule.name}</span>
+                  {t('rules.tester.matchedRule')}: <span className="text-neutral-900 dark:text-neutral-100 font-medium">{matchingRule.name}</span>
                   {' → '}
-                  <span className={matchingRule.action === 'direct' ? 'text-success-text' : 'text-neutral-400'}>
+                  <span className={matchingRule.action === 'direct' ? 'text-green-600 dark:text-success-text' : 'text-neutral-600 dark:text-neutral-400'}>
                     {matchingRule.action === 'proxy' ? t('rules.tester.action.proxy') : t('rules.tester.action.direct')}
                   </span>
                 </>
@@ -87,16 +87,16 @@ export function RuleTester({ onTest, rules }: Props) {
                 <div
                   key={rule.id}
                   className={`flex items-center gap-2 px-2 py-1.5 rounded text-sm ${
-                    matches ? 'bg-neutral-800' : ''
+                    matches ? 'bg-neutral-200 dark:bg-neutral-800' : ''
                   }`}
                 >
-                  <span className={matches ? 'text-success-text' : 'text-neutral-600'}>
+                  <span className={matches ? 'text-green-600 dark:text-success-text' : 'text-neutral-500 dark:text-neutral-600'}>
                     {matches ? '✓' : '✗'}
                   </span>
-                  <span className={matches ? 'text-neutral-200' : 'text-neutral-600'}>
+                  <span className={matches ? 'text-neutral-800 dark:text-neutral-200' : 'text-neutral-500 dark:text-neutral-600'}>
                     {rule.name}
                   </span>
-                  <code className="text-xs text-neutral-600 font-mono">{rule.pattern}</code>
+                  <code className="text-xs text-neutral-500 dark:text-neutral-600 font-mono">{rule.pattern}</code>
                 </div>
               ))}
             </div>

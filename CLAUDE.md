@@ -93,6 +93,8 @@ proxy-data-saver/
 │   │   ├── ProxyConfig/          # Cấu hình proxy (multi-proxy input)
 │   │   ├── RuleManager/          # CRUD rules
 │   │   └── TrafficMonitor/       # Real-time traffic logs
+│   ├── contexts/                 # React Contexts
+│   │   └── ThemeContext.tsx      # Theme provider (light/dark/system)
 │   ├── i18n/                     # Internationalization
 │   │   ├── index.tsx             # I18nProvider, useI18n, useTranslation
 │   │   └── locales/
@@ -355,3 +357,12 @@ Nếu port đã được dùng (Docker, etc.), app sẽ fail. User cần đổi 
   - Fix crash: kiểm tra window.isDestroyed() trước khi send events
   - Fix auto-start: sửa check từ `upstreamProxyUrl` (không tồn tại) sang `proxyList`
   - Thêm safeSend() helper, updateWindowReference(), cleanupIpcHandlers()
+- **v1.7.0**: Dark/Light Mode Theme Switch
+  - ThemeContext với 3 modes: light, dark, system (auto-detect)
+  - Theme toggle button trong titlebar (Sun/Moon/Monitor icons)
+  - Persist theme preference vào localStorage
+  - System preference detection via matchMedia
+  - Tailwind darkMode: 'selector' - class-based dark mode
+  - Tất cả components cập nhật với dark: variants
+  - Tray icon tự động cập nhật theo theme
+  - Thêm logo-dark.png và logo-light.png cho tray

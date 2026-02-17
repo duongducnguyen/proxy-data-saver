@@ -19,11 +19,11 @@ export function TopDomains({ domains }: TopDomainsProps) {
   const maxBytes = domains.length > 0 ? Math.max(...domains.map(d => d.totalBytes)) : 0;
 
   return (
-    <div className="bg-neutral-900/50 rounded-lg p-4">
-      <h3 className="text-xs text-neutral-500 uppercase tracking-wider mb-4">{t('dashboard.topDomains.title')}</h3>
+    <div className="bg-neutral-100 dark:bg-neutral-900/50 rounded-lg p-4">
+      <h3 className="text-xs text-neutral-600 dark:text-neutral-500 uppercase tracking-wider mb-4">{t('dashboard.topDomains.title')}</h3>
 
       {domains.length === 0 ? (
-        <div className="text-center text-neutral-600 py-8 text-sm">
+        <div className="text-center text-neutral-500 dark:text-neutral-600 py-8 text-sm">
           {t('dashboard.topDomains.noData')}
         </div>
       ) : (
@@ -32,20 +32,20 @@ export function TopDomains({ domains }: TopDomainsProps) {
             <div key={domain.hostname} className="relative group">
               {/* Background bar */}
               <div
-                className="absolute inset-0 rounded bg-neutral-800/50 transition-all"
+                className="absolute inset-0 rounded bg-neutral-200/50 dark:bg-neutral-800/50 transition-all"
                 style={{ width: `${(domain.totalBytes / maxBytes) * 100}%` }}
               />
 
               {/* Content */}
               <div className="relative flex items-center justify-between py-2 px-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-neutral-600 text-xs w-4 flex-shrink-0 tabular-nums">{index + 1}</span>
-                  <span className="text-sm text-neutral-300 truncate font-mono">{domain.hostname}</span>
+                  <span className="text-neutral-500 dark:text-neutral-600 text-xs w-4 flex-shrink-0 tabular-nums">{index + 1}</span>
+                  <span className="text-sm text-neutral-700 dark:text-neutral-300 truncate font-mono">{domain.hostname}</span>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <span className={`text-2xs px-1.5 py-0.5 rounded font-medium ${
                     domain.action === 'direct'
-                      ? 'text-success-text'
+                      ? 'text-green-600 dark:text-success-text'
                       : 'text-neutral-500'
                   }`}>
                     {domain.action === 'proxy' ? 'P' : domain.action === 'direct' ? 'D' : 'M'}

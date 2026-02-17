@@ -49,20 +49,20 @@ export function DataChart({ stats }: DataChartProps) {
   const directAngle = (directPercent / 100) * 360;
 
   return (
-    <div className="bg-neutral-900/50 rounded-lg p-4">
-      <h3 className="text-xs text-neutral-500 uppercase tracking-wider mb-4">Data Distribution</h3>
+    <div className="bg-neutral-100 dark:bg-neutral-900/50 rounded-lg p-4">
+      <h3 className="text-xs text-neutral-600 dark:text-neutral-500 uppercase tracking-wider mb-4">Data Distribution</h3>
 
       <div className="flex items-center justify-center gap-8">
         {/* Chart */}
         <div className="relative">
-          <svg width={size} height={size}>
+          <svg width={size} height={size} className="chart-donut">
             {/* Background ring */}
             <circle
               cx={center}
               cy={center}
               r={(radius + innerRadius) / 2}
               fill="none"
-              stroke="#262626"
+              className="stroke-neutral-300 dark:stroke-neutral-800"
               strokeWidth={radius - innerRadius}
             />
 
@@ -70,8 +70,7 @@ export function DataChart({ stats }: DataChartProps) {
             {proxyPercent > 0 && proxyPercent < 100 && (
               <path
                 d={createArc(0, proxyAngle)}
-                fill="#525252"
-                className="transition-all duration-500"
+                className="fill-neutral-400 dark:fill-neutral-600 transition-all duration-500"
               />
             )}
 
@@ -91,7 +90,7 @@ export function DataChart({ stats }: DataChartProps) {
                 cy={center}
                 r={(radius + innerRadius) / 2}
                 fill="none"
-                stroke="#525252"
+                className="stroke-neutral-400 dark:stroke-neutral-600"
                 strokeWidth={radius - innerRadius}
               />
             )}
@@ -111,7 +110,7 @@ export function DataChart({ stats }: DataChartProps) {
               x={center}
               y={center - 4}
               textAnchor="middle"
-              className="fill-neutral-100 font-semibold text-xl"
+              className="fill-neutral-900 dark:fill-neutral-100 font-semibold text-xl"
             >
               {stats.savingsPercent}%
             </text>
@@ -129,10 +128,10 @@ export function DataChart({ stats }: DataChartProps) {
         {/* Legend */}
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-2.5 h-2.5 rounded-full bg-neutral-600" />
+            <div className="w-2.5 h-2.5 rounded-full bg-neutral-400 dark:bg-neutral-600" />
             <div>
-              <div className="text-sm text-neutral-300">{t('dashboard.chart.proxy')}</div>
-              <div className="text-xs text-neutral-600">
+              <div className="text-sm text-neutral-700 dark:text-neutral-300">{t('dashboard.chart.proxy')}</div>
+              <div className="text-xs text-neutral-500 dark:text-neutral-600">
                 {formatBytes(stats.proxyBytes)} ({proxyPercent.toFixed(0)}%)
               </div>
             </div>
@@ -140,8 +139,8 @@ export function DataChart({ stats }: DataChartProps) {
           <div className="flex items-center gap-3">
             <div className="w-2.5 h-2.5 rounded-full bg-success" />
             <div>
-              <div className="text-sm text-neutral-300">{t('dashboard.chart.direct')}</div>
-              <div className="text-xs text-neutral-600">
+              <div className="text-sm text-neutral-700 dark:text-neutral-300">{t('dashboard.chart.direct')}</div>
+              <div className="text-xs text-neutral-500 dark:text-neutral-600">
                 {formatBytes(stats.directBytes)} ({directPercent.toFixed(0)}%)
               </div>
             </div>
