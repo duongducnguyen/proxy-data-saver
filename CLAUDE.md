@@ -349,3 +349,9 @@ Nếu port đã được dùng (Docker, etc.), app sẽ fail. User cần đổi 
   - Fix tray behavior: click X ẩn vào tray, click tray mở lại
   - Thêm error handling cho socket operations
   - Generated logo options trong resources/
+- **v1.6.1**: Critical Bug Fixes
+  - Fix memory leak: IPC handlers chỉ đăng ký 1 lần, thêm cleanup khi quit
+  - Fix StatsManager timer: gọi stopBatchTimer() khi app quit
+  - Fix crash: kiểm tra window.isDestroyed() trước khi send events
+  - Fix auto-start: sửa check từ `upstreamProxyUrl` (không tồn tại) sang `proxyList`
+  - Thêm safeSend() helper, updateWindowReference(), cleanupIpcHandlers()
