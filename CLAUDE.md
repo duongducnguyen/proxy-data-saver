@@ -386,3 +386,10 @@ Nếu port đã được dùng (Docker, etc.), app sẽ fail. User cần đổi 
   - Remove auto-start feature: bỏ checkbox và logic tự động start khi mở app
   - Default theme: light (không còn dark flash khi khởi động)
   - Windows installer: NSIS với setup wizard (không one-click)
+- **v1.1.0**: HTTPS Byte Counting & Thumbnails
+  - Thêm byte counting cho HTTPS tunnels (CONNECT requests)
+  - Trước đây chỉ HTTP requests được đếm bytes, giờ tất cả traffic đều được track
+  - Traffic emit 2 lần: ngay lập tức (UI visibility) và khi close (actual bytes cho stats)
+  - ByteCounterStream được dùng trong tunnelDirect() và tunnelViaProxy()
+  - Thêm debug logging cho IPC traffic forwarding
+  - Tạo thumbnails cho CodeCanyon marketplace (resources/thumbnail-*.png)

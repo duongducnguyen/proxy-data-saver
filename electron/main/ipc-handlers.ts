@@ -2,7 +2,7 @@ import { ipcMain, BrowserWindow } from 'electron';
 import { proxyServer } from './proxy-server';
 import { configStore } from './config-store';
 import { Rule, ProxyConfig } from './types';
-import { checkFirewallStatus, openFirewallSettings } from './firewall-check';
+import { checkFirewallStatus, requestFirewallPermission } from './firewall-check';
 
 let handlersRegistered = false;
 let currentWindow: BrowserWindow | null = null;
@@ -152,12 +152,15 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     return await checkFirewallStatus();
   });
 
-  ipcMain.handle('firewall:openSettings', async () => {
-    await openFirewallSettings();
+  ipcMain.handle('firewall:requestPermission', async () => {
+    return await requestFirewallPermission();
   });
 
   // Forward events to renderer (with destroyed window check)
-  const trafficListener = (log: unknown) => safeSend('traffic:new', log);
+  const trafficListener = (log: unknown) => {
+    console.log('[IPC] Forwarding traffic to renderer:', (log as { hostname?: string })?.hostname);
+    safeSend('traffic:new', log);
+  };
   const startedListener = (status: unknown) => safeSend('proxy:started', status);
   const stoppedListener = () => safeSend('proxy:stopped');
   const errorListener = (error: { message: string }) => safeSend('proxy:error', error.message);
