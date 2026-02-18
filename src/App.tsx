@@ -134,6 +134,9 @@ function AppContent() {
           <span className="text-2xs text-neutral-500 dark:text-neutral-600 font-medium tracking-wide uppercase">
             {t('app.title')}
           </span>
+          <span className="text-2xs text-neutral-400 dark:text-neutral-700">
+            v{__APP_VERSION__}
+          </span>
         </div>
         <div className="flex items-center" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
           <ThemeSwitcher />

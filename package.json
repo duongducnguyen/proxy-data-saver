@@ -1,6 +1,6 @@
 {
   "name": "proxy-data-saver",
-  "version": "1.0.0",
+  "version": "1.8.0",
   "description": "Local proxy server with conditional routing for saving data",
   "main": "./out/main/index.js",
   "scripts": {
