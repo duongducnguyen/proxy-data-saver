@@ -135,7 +135,7 @@ function AppContent() {
             {t('app.title')}
           </span>
           <span className="text-2xs text-neutral-400 dark:text-neutral-700">
-            v{__APP_VERSION__}
+            v{import.meta.env.APP_VERSION || '1.0'}
           </span>
         </div>
         <div className="flex items-center" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>

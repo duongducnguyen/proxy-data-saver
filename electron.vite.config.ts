@@ -31,7 +31,7 @@ export default defineConfig({
   renderer: {
     root: '.',
     define: {
-      __APP_VERSION__: JSON.stringify(pkg.version)
+      'import.meta.env.APP_VERSION': JSON.stringify(pkg.version)
     },
     build: {
       rollupOptions: {
