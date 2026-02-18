@@ -7,7 +7,9 @@ import { useProxy } from './hooks/useProxy';
 import { useRules } from './hooks/useRules';
 import { useTraffic } from './hooks/useTraffic';
 import { I18nProvider, useI18n, Language } from './i18n';
-import { ThemeProvider, useTheme, Theme } from './contexts/ThemeContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import logoDark from './assets/logo-dark.png';
+import logoLight from './assets/logo-light.png';
 
 type Tab = 'dashboard' | 'proxy' | 'rules' | 'traffic';
 
@@ -29,49 +31,24 @@ function LanguageSwitcher() {
 function ThemeSwitcher() {
   const { theme, toggleTheme } = useTheme();
 
-  const getIcon = () => {
-    switch (theme) {
-      case 'light':
-        // Sun icon
-        return (
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="5" />
-            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-          </svg>
-        );
-      case 'dark':
-        // Moon icon
-        return (
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-          </svg>
-        );
-      case 'system':
-        // Monitor icon
-        return (
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-            <path d="M8 21h8M12 17v4" />
-          </svg>
-        );
-    }
-  };
-
-  const getTitle = () => {
-    switch (theme) {
-      case 'light': return 'Light mode';
-      case 'dark': return 'Dark mode';
-      case 'system': return 'System';
-    }
-  };
-
   return (
     <button
       onClick={toggleTheme}
-      title={getTitle()}
+      title={theme === 'light' ? 'Light mode' : 'Dark mode'}
       className="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors p-1"
     >
-      {getIcon()}
+      {theme === 'light' ? (
+        // Sun icon
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="5" />
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+      ) : (
+        // Moon icon
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      )}
     </button>
   );
 }
@@ -125,6 +102,7 @@ function WindowControls() {
 function AppContent() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const { t } = useI18n();
+  const { theme } = useTheme();
 
   const proxy = useProxy();
   const rules = useRules();
@@ -148,6 +126,11 @@ function AppContent() {
         style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
       >
         <div className="flex items-center gap-2 px-3">
+          <img
+            src={theme === 'dark' ? logoLight : logoDark}
+            alt="Logo"
+            className="w-3.5 h-3.5"
+          />
           <span className="text-2xs text-neutral-500 dark:text-neutral-600 font-medium tracking-wide uppercase">
             {t('app.title')}
           </span>
@@ -249,14 +232,25 @@ function AppContent() {
       {/* Footer */}
       <footer className="flex-shrink-0 px-6 py-2 border-t border-neutral-200 dark:border-neutral-900">
         <div className="flex items-center justify-between text-2xs text-neutral-500 dark:text-neutral-600">
-          <div>
+          <div className="flex-1">
             {proxy.status.running && proxy.status.localIps.length > 0 && (
               <span>
                 LAN: <code className="text-neutral-700 dark:text-neutral-400 font-mono">{proxy.status.localIps[0]}</code>
               </span>
             )}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex-1 text-center text-neutral-400 dark:text-neutral-700">
+            by{' '}
+            <a
+              href="https://app.woware.net/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-500 dark:text-indigo-400 underline hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors"
+            >
+              Woware
+            </a>
+          </div>
+          <div className="flex-1 flex items-center justify-end gap-4">
             <span>{t('footer.proxies')}: {runningCount}/{totalCount}</span>
             <span>{t('footer.rules')}: {rules.rules.filter(r => r.enabled).length} {t('footer.active')}</span>
           </div>

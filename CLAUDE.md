@@ -366,3 +366,9 @@ Nếu port đã được dùng (Docker, etc.), app sẽ fail. User cần đổi 
   - Tất cả components cập nhật với dark: variants
   - Tray icon tự động cập nhật theo theme
   - Thêm logo-dark.png và logo-light.png cho tray
+- **v1.8.0**: UI Polish & Branding
+  - Xoá system theme, chỉ giữ dark/light toggle
+  - Tray menu đồng bộ: chỉ hiện "Start Proxy" hoặc "Stop Proxy" tuỳ trạng thái
+  - Thêm app logo vào titlebar (logo thay đổi theo theme)
+  - Thêm "by Woware" branding ở footer với link tới https://app.woware.net/
+  - Logo assets di chuyển vào src/assets/

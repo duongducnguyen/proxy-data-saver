@@ -143,21 +143,10 @@ function createWindow(): void {
   });
 }
 
-function createTray(): void {
-  // Use light logo for tray (app is dark theme, Windows tray is usually dark)
-  const iconPath = join(__dirname, '../../resources/logo-light.png');
+function updateTrayMenu(): void {
+  if (!tray) return;
 
-  let icon: nativeImage;
-  try {
-    icon = nativeImage.createFromPath(iconPath);
-    if (icon.isEmpty()) {
-      icon = nativeImage.createEmpty();
-    }
-  } catch {
-    icon = nativeImage.createEmpty();
-  }
-
-  tray = new Tray(icon);
+  const isRunning = proxyServer.getStatus().running;
 
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -170,21 +159,19 @@ function createTray(): void {
       }
     },
     {
-      label: 'Start Proxy',
+      label: isRunning ? 'Stop Proxy' : 'Start Proxy',
       click: async () => {
-        try {
-          const config = configStore.getProxyConfig();
-          const rules = configStore.getRules();
-          await proxyServer.start(config, rules);
-        } catch (err) {
-          console.error('Failed to start proxy:', err);
+        if (isRunning) {
+          await proxyServer.stop();
+        } else {
+          try {
+            const config = configStore.getProxyConfig();
+            const rules = configStore.getRules();
+            await proxyServer.start(config, rules);
+          } catch (err) {
+            console.error('Failed to start proxy:', err);
+          }
         }
-      }
-    },
-    {
-      label: 'Stop Proxy',
-      click: async () => {
-        await proxyServer.stop();
       }
     },
     { type: 'separator' },
@@ -204,8 +191,32 @@ function createTray(): void {
     }
   ]);
 
-  tray.setToolTip('Proxy Data Saver');
   tray.setContextMenu(contextMenu);
+}
+
+function createTray(): void {
+  // Use light logo for tray (app is dark theme, Windows tray is usually dark)
+  const iconPath = join(__dirname, '../../resources/logo-light.png');
+
+  let icon: nativeImage;
+  try {
+    icon = nativeImage.createFromPath(iconPath);
+    if (icon.isEmpty()) {
+      icon = nativeImage.createEmpty();
+    }
+  } catch {
+    icon = nativeImage.createEmpty();
+  }
+
+  tray = new Tray(icon);
+  tray.setToolTip('Proxy Data Saver');
+
+  // Set initial menu
+  updateTrayMenu();
+
+  // Update menu when proxy status changes
+  proxyServer.on('started', updateTrayMenu);
+  proxyServer.on('stopped', updateTrayMenu);
 
   tray.on('double-click', () => {
     if (mainWindow) {
