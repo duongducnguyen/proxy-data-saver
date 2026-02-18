@@ -265,17 +265,6 @@ export function ProxyConfig({
           </p>
         </div>
 
-        <div className="flex items-end pb-1">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              className="w-4 h-4 rounded border-neutral-400 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-accent focus:ring-accent/50"
-              checked={localConfig.autoStart}
-              onChange={(e) => handleChange('autoStart', e.target.checked)}
-            />
-            <span className="text-sm text-neutral-600 dark:text-neutral-400">{t('proxy.settings.autoStart')}</span>
-          </label>
-        </div>
       </div>
 
       {/* LAN IPs */}

@@ -379,3 +379,10 @@ Nếu port đã được dùng (Docker, etc.), app sẽ fail. User cần đổi 
   - Nút "Check Again" để verify sau khi user cấp quyền
   - Loading spinner khi đang check
   - firewall-check.ts sử dụng netsh để query firewall rules
+- **v1.0.0 Release**: Production Ready
+  - Fix dark screen flash: đổi backgroundColor sang light (#fafafa), dùng ready-to-show event
+  - Fix missing tray icon: tạo ICO từ PNG bằng electron-icon-builder, thêm extraResources config
+  - Fix icon paths: tạo getIconPath() helper cho dev/production paths
+  - Remove auto-start feature: bỏ checkbox và logic tự động start khi mở app
+  - Default theme: light (không còn dark flash khi khởi động)
+  - Windows installer: NSIS với setup wizard (không one-click)

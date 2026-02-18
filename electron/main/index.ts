@@ -1,5 +1,16 @@
 import { app, BrowserWindow, shell, Tray, Menu, nativeImage, ipcMain } from 'electron';
 import { join } from 'path';
+
+// Get icon path - different in dev vs production
+function getIconPath(filename: string): string {
+  if (process.env.ELECTRON_RENDERER_URL) {
+    // Development
+    return join(__dirname, '../../resources/icons/', filename);
+  } else {
+    // Production - extraResources are in process.resourcesPath
+    return join(process.resourcesPath, 'icons/', filename);
+  }
+}
 import { registerIpcHandlers, updateWindowReference, cleanupIpcHandlers } from './ipc-handlers';
 import { configStore } from './config-store';
 import { proxyServer } from './proxy-server';
@@ -9,19 +20,13 @@ let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let isQuitting = false;
 let windowControlsRegistered = false;
-let currentTheme: 'light' | 'dark' = 'dark';
+let currentTheme: 'light' | 'dark' = 'light';
 
-function updateTrayIcon(theme: 'light' | 'dark'): void {
+function updateTrayIcon(_theme: 'light' | 'dark'): void {
   if (!tray) return;
 
-  // Use opposite color for visibility: light icon on dark system tray, dark icon on light
-  // For dark app theme, Windows tray is usually dark, so use light icon
-  // For light app theme, we still use light icon since Windows tray is typically dark
-  const iconName = theme === 'dark' ? 'logo-light.png' : 'logo-dark.png';
-  const iconPath = join(__dirname, '../../resources/', iconName);
-
   try {
-    const icon = nativeImage.createFromPath(iconPath);
+    const icon = nativeImage.createFromPath(getIconPath('icon.ico'));
     if (!icon.isEmpty()) {
       tray.setImage(icon);
     }
@@ -48,15 +53,16 @@ function createWindow(): void {
       contextIsolation: true,
       sandbox: false
     },
-    icon: join(__dirname, '../../resources/logo-dark.png'),
+    icon: getIconPath('icon.ico'),
     show: false,
-    backgroundColor: '#111827'
+    backgroundColor: '#fafafa'
   });
 
   // Remove default menu
   Menu.setApplicationMenu(null);
 
-  mainWindow.on('ready-to-show', () => {
+  // Show window only when ready (CSS loaded, no white flash)
+  mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
   });
 
@@ -125,15 +131,6 @@ function createWindow(): void {
     mainWindow?.webContents.send('window:maximized', false);
   });
 
-  // Auto-start proxy if configured
-  const config = configStore.getProxyConfig();
-  if (config.autoStart && config.proxyList) {
-    const rules = configStore.getRules();
-    proxyServer.start(config, rules).catch((err) => {
-      console.error('Failed to auto-start proxy:', err);
-    });
-  }
-
   // Minimize to tray instead of closing
   mainWindow.on('close', (event) => {
     if (!isQuitting) {
@@ -195,14 +192,12 @@ function updateTrayMenu(): void {
 }
 
 function createTray(): void {
-  // Use light logo for tray (app is dark theme, Windows tray is usually dark)
-  const iconPath = join(__dirname, '../../resources/logo-light.png');
-
   let icon: nativeImage;
   try {
-    icon = nativeImage.createFromPath(iconPath);
+    icon = nativeImage.createFromPath(getIconPath('icon.ico'));
     if (icon.isEmpty()) {
-      icon = nativeImage.createEmpty();
+      // Fallback to PNG if ICO fails
+      icon = nativeImage.createFromPath(getIconPath('32x32.png'));
     }
   } catch {
     icon = nativeImage.createEmpty();
