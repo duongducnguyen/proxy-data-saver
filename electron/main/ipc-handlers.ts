@@ -2,6 +2,7 @@ import { ipcMain, BrowserWindow } from 'electron';
 import { proxyServer } from './proxy-server';
 import { configStore } from './config-store';
 import { Rule, ProxyConfig } from './types';
+import { checkFirewallStatus, openFirewallSettings } from './firewall-check';
 
 let handlersRegistered = false;
 let currentWindow: BrowserWindow | null = null;
@@ -144,6 +145,15 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
 
   ipcMain.handle('stats:getActiveProxyPorts', () => {
     return proxyServer.getActiveProxyPorts();
+  });
+
+  // Firewall check
+  ipcMain.handle('firewall:check', async () => {
+    return await checkFirewallStatus();
+  });
+
+  ipcMain.handle('firewall:openSettings', async () => {
+    await openFirewallSettings();
   });
 
   // Forward events to renderer (with destroyed window check)

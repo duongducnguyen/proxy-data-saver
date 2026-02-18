@@ -4,7 +4,15 @@ export const vi = {
     status: {
       running: 'Đang chạy',
       stopped: 'Đã dừng'
-    }
+    },
+    checking: 'Đang kiểm tra'
+  },
+  firewall: {
+    title: 'Cần cấp quyền Firewall',
+    description: 'Ứng dụng cần quyền Windows Firewall để các thiết bị trong mạng (điện thoại, laptop) có thể kết nối qua proxy. Vui lòng cho phép truy cập cho cả Private và Public networks khi được hỏi.',
+    openSettings: 'Mở Windows Firewall Settings',
+    checkAgain: 'Kiểm tra lại',
+    hint: 'Sau khi cho phép ứng dụng, nhấn "Kiểm tra lại" để tiếp tục.'
   },
   tabs: {
     dashboard: 'Bảng điều khiển',

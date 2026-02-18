@@ -372,3 +372,10 @@ Nếu port đã được dùng (Docker, etc.), app sẽ fail. User cần đổi 
   - Thêm app logo vào titlebar (logo thay đổi theo theme)
   - Thêm "by Woware" branding ở footer với link tới https://app.woware.net/
   - Logo assets di chuyển vào src/assets/
+- **v1.9.0**: Windows Firewall Check
+  - Check firewall permission khi app khởi động
+  - Block screen nếu chưa được cấp quyền với hướng dẫn chi tiết
+  - Nút "Open Windows Firewall Settings" mở Control Panel
+  - Nút "Check Again" để verify sau khi user cấp quyền
+  - Loading spinner khi đang check
+  - firewall-check.ts sử dụng netsh để query firewall rules

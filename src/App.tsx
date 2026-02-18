@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { ProxyConfig } from './components/ProxyConfig';
 import { RuleManager } from './components/RuleManager';
@@ -12,6 +12,136 @@ import logoDark from './assets/logo-dark.png';
 import logoLight from './assets/logo-light.png';
 
 type Tab = 'dashboard' | 'proxy' | 'rules' | 'traffic';
+
+interface FirewallStatus {
+  allowed: boolean;
+  checked: boolean;
+  error?: string;
+}
+
+function FirewallGate({ children }: { children: React.ReactNode }) {
+  const { t } = useI18n();
+  const { theme } = useTheme();
+  const [status, setStatus] = useState<FirewallStatus | null>(null);
+  const [checking, setChecking] = useState(true);
+
+  const checkFirewall = useCallback(async () => {
+    setChecking(true);
+    try {
+      const result = await window.electronAPI?.firewall?.check();
+      setStatus(result || { allowed: true, checked: false });
+    } catch (err) {
+      console.error('Firewall check failed:', err);
+      setStatus({ allowed: true, checked: false }); // Allow on error
+    }
+    setChecking(false);
+  }, []);
+
+  useEffect(() => {
+    checkFirewall();
+  }, [checkFirewall]);
+
+  const handleOpenSettings = async () => {
+    await window.electronAPI?.firewall?.openSettings();
+  };
+
+  // Still checking
+  if (checking || status === null) {
+    return (
+      <div className="h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950">
+        {/* Minimal titlebar */}
+        <div
+          className="flex-shrink-0 h-7 flex items-center justify-end select-none border-b border-neutral-200 dark:border-neutral-900"
+          style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+        >
+          <div className="flex items-center" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+            <WindowControls />
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex items-center gap-3 text-neutral-500 dark:text-neutral-600 text-sm">
+            <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            {t('app.checking')}...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Firewall not allowed - show blocking screen
+  if (!status.allowed) {
+    return (
+      <div className="h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950">
+        {/* Minimal titlebar */}
+        <div
+          className="flex-shrink-0 h-7 flex items-center justify-between select-none border-b border-neutral-200 dark:border-neutral-900"
+          style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+        >
+          <div className="flex items-center gap-2 px-3">
+            <img
+              src={theme === 'dark' ? logoLight : logoDark}
+              alt="Logo"
+              className="w-3.5 h-3.5"
+            />
+            <span className="text-2xs text-neutral-500 dark:text-neutral-600 font-medium tracking-wide uppercase">
+              {t('app.title')}
+            </span>
+          </div>
+          <div className="flex items-center" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+            <WindowControls />
+          </div>
+        </div>
+
+        {/* Firewall permission required screen */}
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="max-w-md text-center">
+            {/* Warning icon */}
+            <div className="mx-auto w-16 h-16 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mb-6">
+              <svg className="w-8 h-8 text-yellow-600 dark:text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
+              {t('firewall.title')}
+            </h2>
+
+            <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-6 leading-relaxed">
+              {t('firewall.description')}
+            </p>
+
+            <div className="space-y-3">
+              <button
+                onClick={handleOpenSettings}
+                className="w-full btn btn-primary"
+              >
+                {t('firewall.openSettings')}
+              </button>
+
+              <button
+                onClick={checkFirewall}
+                disabled={checking}
+                className="w-full btn btn-secondary"
+              >
+                {checking ? t('app.checking') + '...' : t('firewall.checkAgain')}
+              </button>
+            </div>
+
+            <p className="text-xs text-neutral-500 dark:text-neutral-600 mt-6">
+              {t('firewall.hint')}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Firewall OK - render children
+  return <>{children}</>;
+}
 
 function LanguageSwitcher() {
   const { language, setLanguage, t } = useI18n();
@@ -267,7 +397,9 @@ function App() {
   return (
     <ThemeProvider>
       <I18nProvider>
-        <AppContent />
+        <FirewallGate>
+          <AppContent />
+        </FirewallGate>
       </I18nProvider>
     </ThemeProvider>
   );

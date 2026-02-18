@@ -81,6 +81,10 @@ interface ElectronAPI {
     clear: () => Promise<TrafficLog[]>;
     onNew: (callback: (log: TrafficLog) => void) => () => void;
   };
+  firewall: {
+    check: () => Promise<{ allowed: boolean; checked: boolean; error?: string }>;
+    openSettings: () => Promise<void>;
+  };
 }
 
 interface ImportMetaEnv {

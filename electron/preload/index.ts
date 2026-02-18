@@ -89,6 +89,14 @@ const electronAPI = {
     setTheme: (theme: 'light' | 'dark'): void => ipcRenderer.send('theme:set', theme)
   },
 
+  // Firewall check
+  firewall: {
+    check: (): Promise<{ allowed: boolean; checked: boolean; error?: string }> =>
+      ipcRenderer.invoke('firewall:check'),
+    openSettings: (): Promise<void> =>
+      ipcRenderer.invoke('firewall:openSettings')
+  },
+
   // Stats management
   stats: {
     get: (period: 'today' | 'week' | 'month' | 'all', localPort?: number): Promise<AggregatedStats> =>

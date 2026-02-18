@@ -4,7 +4,15 @@ export const en = {
     status: {
       running: 'Running',
       stopped: 'Stopped'
-    }
+    },
+    checking: 'Checking'
+  },
+  firewall: {
+    title: 'Firewall Permission Required',
+    description: 'This app needs Windows Firewall permission to allow devices on your network (phones, laptops) to connect through the proxy. Please allow access for both Private and Public networks when prompted.',
+    openSettings: 'Open Windows Firewall Settings',
+    checkAgain: 'Check Again',
+    hint: 'After allowing the app, click "Check Again" to continue.'
   },
   tabs: {
     dashboard: 'Dashboard',
