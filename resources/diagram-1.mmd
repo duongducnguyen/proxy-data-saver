@@ -1,0 +1,17 @@
+flowchart TD
+    A[Thiet bi cua ban<br/>PC, Dien thoai, Laptop] --> B[PROXY DATA SAVER]
+
+    B --> C{Kiem tra Rules<br/>Domain nay di dau?}
+
+    C -->|Qua Proxy| D[Proxy Server<br/>4G / Datacenter]
+    C -->|Di thang| E[Internet truc tiep<br/>WiFi / Cap quang]
+
+    D --> F[Website dich]
+    E --> F
+
+    style A fill:#e1f5fe
+    style B fill:#fff3e0
+    style C fill:#fce4ec
+    style D fill:#ffebee
+    style E fill:#e8f5e9
+    style F fill:#f3e5f5

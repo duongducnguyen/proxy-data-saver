@@ -9,10 +9,10 @@ export const vi = {
   },
   firewall: {
     title: 'Cần cấp quyền Firewall',
-    description: 'Ứng dụng cần quyền Windows Firewall để các thiết bị trong mạng (điện thoại, laptop) có thể kết nối qua proxy. Vui lòng cho phép truy cập cho cả Private và Public networks khi được hỏi.',
-    openSettings: 'Mở Windows Firewall Settings',
+    description: 'Ứng dụng cần quyền Windows Firewall để các thiết bị trong mạng (điện thoại, laptop) có thể kết nối qua proxy.',
+    requestPermission: 'Cấp quyền Firewall',
     checkAgain: 'Kiểm tra lại',
-    hint: 'Sau khi cho phép ứng dụng, nhấn "Kiểm tra lại" để tiếp tục.'
+    hint: 'Nhấn nút ở trên để cấp quyền. Windows sẽ hiển thị hộp thoại UAC yêu cầu quyền quản trị viên.'
   },
   tabs: {
     dashboard: 'Bảng điều khiển',
@@ -64,7 +64,8 @@ hostname:port`,
       starting: 'Đang khởi động...',
       stopping: 'Đang dừng...',
       restarting: 'Đang khởi động lại...',
-      copy: 'Sao chép'
+      copy: 'Sao chép',
+      copyAll: 'Sao chép tất cả'
     },
     table: {
       localPort: 'Port local',

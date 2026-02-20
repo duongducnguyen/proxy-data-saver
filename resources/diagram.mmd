@@ -1,0 +1,45 @@
+flowchart TD
+    subgraph devices ["📱 Thiết bị của bạn"]
+        A1["💻 Máy tính"]
+        A2["📱 Điện thoại"]
+        A3["💻 Laptop"]
+    end
+
+    subgraph pds ["📦 PROXY DATA SAVER"]
+        B1["🔌 Tạo Local Proxy<br/>localhost:8080, 8081..."]
+        B2["📋 Danh sách Rules<br/>*.youtube.com → Thẳng<br/>*.work.com → Proxy"]
+        B3["🔍 Kiểm tra Domain"]
+        B1 --> B2 --> B3
+    end
+
+    subgraph upstream ["🌐 Proxy gốc của bạn"]
+        C1["📡 Proxy 4G/5G"]
+        C2["🏢 Proxy Datacenter"]
+        C3["🏠 Proxy Residential"]
+    end
+
+    subgraph direct ["🏠 Kết nối trực tiếp"]
+        D1["📶 WiFi nhà"]
+        D2["🔌 Cáp quang"]
+    end
+
+    A1 --> B1
+    A2 --> B1
+    A3 --> B1
+
+    B3 -->|"✅ Cần IP Proxy<br/>(Tốn lưu lượng)"| C1
+    B3 -->|"✅ Cần IP Proxy<br/>(Tốn lưu lượng)"| C2
+    B3 -->|"✅ Cần IP Proxy<br/>(Tốn lưu lượng)"| C3
+    B3 -->|"❌ Không cần<br/>(Miễn phí)"| D1
+    B3 -->|"❌ Không cần<br/>(Miễn phí)"| D2
+
+    C1 --> E["🎯 Website đích"]
+    C2 --> E
+    C3 --> E
+    D1 --> E
+    D2 --> E
+
+    style pds fill:#fff3e0
+    style upstream fill:#ffebee
+    style direct fill:#e8f5e9
+    style E fill:#e3f2fd

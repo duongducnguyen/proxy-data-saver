@@ -9,10 +9,10 @@ export const en = {
   },
   firewall: {
     title: 'Firewall Permission Required',
-    description: 'This app needs Windows Firewall permission to allow devices on your network (phones, laptops) to connect through the proxy. Please allow access for both Private and Public networks when prompted.',
-    openSettings: 'Open Windows Firewall Settings',
+    description: 'This app needs Windows Firewall permission to allow devices on your network (phones, laptops) to connect through the proxy.',
+    requestPermission: 'Grant Firewall Permission',
     checkAgain: 'Check Again',
-    hint: 'After allowing the app, click "Check Again" to continue.'
+    hint: 'Click the button above to grant permission. A Windows UAC prompt will appear asking for administrator access.'
   },
   tabs: {
     dashboard: 'Dashboard',
@@ -64,7 +64,8 @@ hostname:port`,
       starting: 'Starting...',
       stopping: 'Stopping...',
       restarting: 'Restarting...',
-      copy: 'Copy'
+      copy: 'Copy',
+      copyAll: 'Copy All'
     },
     table: {
       localPort: 'Local Port',

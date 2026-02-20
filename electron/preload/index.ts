@@ -93,8 +93,8 @@ const electronAPI = {
   firewall: {
     check: (): Promise<{ allowed: boolean; checked: boolean; error?: string }> =>
       ipcRenderer.invoke('firewall:check'),
-    openSettings: (): Promise<void> =>
-      ipcRenderer.invoke('firewall:openSettings')
+    requestPermission: (): Promise<boolean> =>
+      ipcRenderer.invoke('firewall:requestPermission')
   },
 
   // Stats management

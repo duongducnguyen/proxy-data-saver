@@ -125,7 +125,24 @@ export function ProxyConfig({
                   <th className="pb-3 font-medium">{t('proxy.table.localPort')}</th>
                   <th className="pb-3 font-medium">{t('proxy.table.upstream')}</th>
                   <th className="pb-3 font-medium">{t('proxy.table.status')}</th>
-                  <th className="pb-3 font-medium">{t('proxy.table.lanAddress')}</th>
+                  <th className="pb-3 font-medium">
+                    <div className="flex items-center gap-2">
+                      {t('proxy.table.lanAddress')}
+                      {status.localIps[0] && status.proxies.length > 0 && (
+                        <button
+                          onClick={() => {
+                            const allAddresses = status.proxies
+                              .map(p => `${status.localIps[0]}:${p.localPort}`)
+                              .join('\n');
+                            navigator.clipboard.writeText(allAddresses);
+                          }}
+                          className="text-2xs font-normal normal-case text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+                        >
+                          {t('proxy.actions.copyAll')}
+                        </button>
+                      )}
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200 dark:divide-neutral-900">

@@ -41,8 +41,16 @@ function FirewallGate({ children }: { children: React.ReactNode }) {
     checkFirewall();
   }, [checkFirewall]);
 
-  const handleOpenSettings = async () => {
-    await window.electronAPI?.firewall?.openSettings();
+  const handleRequestPermission = async () => {
+    setChecking(true);
+    try {
+      await window.electronAPI?.firewall?.requestPermission();
+      // Re-check after permission request
+      await checkFirewall();
+    } catch (err) {
+      console.error('Permission request failed:', err);
+      setChecking(false);
+    }
   };
 
   // Still checking
@@ -115,10 +123,11 @@ function FirewallGate({ children }: { children: React.ReactNode }) {
 
             <div className="space-y-3">
               <button
-                onClick={handleOpenSettings}
+                onClick={handleRequestPermission}
+                disabled={checking}
                 className="w-full btn btn-primary"
               >
-                {t('firewall.openSettings')}
+                {checking ? t('app.checking') + '...' : t('firewall.requestPermission')}
               </button>
 
               <button
