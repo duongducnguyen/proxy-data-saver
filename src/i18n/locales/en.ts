@@ -134,7 +134,8 @@ hostname:port`,
       moveDown: 'Move Down',
       confirmDelete: 'Are you sure you want to delete this rule?'
     },
-    dismiss: 'Dismiss'
+    dismiss: 'Dismiss',
+    disabledWhileRunning: 'Stop the proxy to edit rules'
   },
   traffic: {
     title: 'Traffic Monitor',

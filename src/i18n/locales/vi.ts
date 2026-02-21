@@ -134,7 +134,8 @@ hostname:port`,
       moveDown: 'Di chuyển xuống',
       confirmDelete: 'Bạn có chắc muốn xóa quy tắc này?'
     },
-    dismiss: 'Bỏ qua'
+    dismiss: 'Bỏ qua',
+    disabledWhileRunning: 'Dừng proxy để chỉnh sửa quy tắc'
   },
   traffic: {
     title: 'Giám sát lưu lượng',

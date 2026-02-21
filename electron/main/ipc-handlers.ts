@@ -158,7 +158,6 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
 
   // Forward events to renderer (with destroyed window check)
   const trafficListener = (log: unknown) => {
-    console.log('[IPC] Forwarding traffic to renderer:', (log as { hostname?: string })?.hostname);
     safeSend('traffic:new', log);
   };
   const startedListener = (status: unknown) => safeSend('proxy:started', status);

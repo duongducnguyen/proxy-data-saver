@@ -349,6 +349,7 @@ function AppContent() {
             rules={rules.rules}
             loading={rules.loading}
             error={rules.error}
+            proxyRunning={proxy.status.running}
             onAddRule={rules.addRule}
             onUpdateRule={rules.updateRule}
             onDeleteRule={rules.deleteRule}

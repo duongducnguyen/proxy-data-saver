@@ -14,6 +14,7 @@ interface Props {
   rule: Rule;
   index: number;
   total: number;
+  disabled?: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onToggle: (enabled: boolean) => void;
@@ -25,6 +26,7 @@ export function RuleItem({
   rule,
   index,
   total,
+  disabled = false,
   onEdit,
   onDelete,
   onToggle,
@@ -42,10 +44,10 @@ export function RuleItem({
       }`}
     >
       {/* Reorder buttons */}
-      <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className={`flex flex-col gap-0.5 transition-opacity ${disabled ? 'opacity-30' : 'opacity-0 group-hover:opacity-100'}`}>
         <button
           onClick={onMoveUp}
-          disabled={index === 0}
+          disabled={index === 0 || disabled}
           className="text-neutral-500 dark:text-neutral-600 hover:text-neutral-700 dark:hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed p-0.5"
         >
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -54,7 +56,7 @@ export function RuleItem({
         </button>
         <button
           onClick={onMoveDown}
-          disabled={index === total - 1}
+          disabled={index === total - 1 || disabled}
           className="text-neutral-500 dark:text-neutral-600 hover:text-neutral-700 dark:hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed p-0.5"
         >
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -64,11 +66,12 @@ export function RuleItem({
       </div>
 
       {/* Toggle */}
-      <label className="flex items-center cursor-pointer">
+      <label className={`flex items-center ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
         <input
           type="checkbox"
-          className="w-3.5 h-3.5 rounded border-neutral-400 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-accent focus:ring-accent/50"
+          className="w-3.5 h-3.5 rounded border-neutral-400 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-accent focus:ring-accent/50 disabled:opacity-50 disabled:cursor-not-allowed"
           checked={rule.enabled}
+          disabled={disabled}
           onChange={(e) => onToggle(e.target.checked)}
         />
       </label>
@@ -89,10 +92,11 @@ export function RuleItem({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className={`flex gap-1 transition-opacity ${disabled ? 'opacity-30' : 'opacity-0 group-hover:opacity-100'}`}>
         <button
           onClick={onEdit}
-          className="p-1.5 text-neutral-500 dark:text-neutral-600 hover:text-neutral-700 dark:hover:text-neutral-300 rounded hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+          disabled={disabled}
+          className="p-1.5 text-neutral-500 dark:text-neutral-600 hover:text-neutral-700 dark:hover:text-neutral-300 rounded hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors disabled:cursor-not-allowed disabled:hover:text-neutral-500 disabled:hover:bg-transparent"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -100,7 +104,8 @@ export function RuleItem({
         </button>
         <button
           onClick={onDelete}
-          className="p-1.5 text-neutral-500 dark:text-neutral-600 hover:text-danger dark:hover:text-danger-text rounded hover:bg-danger-muted transition-colors"
+          disabled={disabled}
+          className="p-1.5 text-neutral-500 dark:text-neutral-600 hover:text-danger dark:hover:text-danger-text rounded hover:bg-danger-muted transition-colors disabled:cursor-not-allowed disabled:hover:text-neutral-500 disabled:hover:bg-transparent"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

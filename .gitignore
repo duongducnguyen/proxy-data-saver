@@ -40,3 +40,10 @@ Thumbs.db
 .worktrees/
 .security-key
 logs/security/
+
+# Windows null device file
+nul
+
+# Marketing/CodeCanyon files
+CODECANYON-VI.html
+J2TEAM-POST.md
