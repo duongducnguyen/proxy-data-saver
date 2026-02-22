@@ -208,5 +208,9 @@ hostname:port`,
   language: {
     en: 'English',
     vi: 'Tiếng Việt'
+  },
+  update: {
+    available: 'Có phiên bản mới: v{version}',
+    download: 'Tải về'
   }
 };

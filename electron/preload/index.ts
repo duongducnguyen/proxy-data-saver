@@ -89,6 +89,15 @@ const electronAPI = {
     setTheme: (theme: 'light' | 'dark'): void => ipcRenderer.send('theme:set', theme)
   },
 
+  // Update checker
+  update: {
+    onAvailable: (callback: (info: { latestVersion: string; currentVersion: string }) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, info: { latestVersion: string; currentVersion: string }) => callback(info);
+      ipcRenderer.on('update:available', listener);
+      return () => ipcRenderer.removeListener('update:available', listener);
+    }
+  },
+
   // Firewall check
   firewall: {
     check: (): Promise<{ allowed: boolean; checked: boolean; error?: string }> =>

@@ -16,6 +16,7 @@ interface Props {
   onSave: (rule: Omit<Rule, 'id'>) => void;
   onCancel: () => void;
   onValidate: (pattern: string) => Promise<{ valid: boolean; error?: string }>;
+  onValidChange?: (valid: boolean) => void;
 }
 
 function patternToLines(pattern: string): string {
@@ -28,7 +29,7 @@ function linesToPattern(lines: string): string {
   return lines.split('\n').map(l => l.trim()).filter(Boolean).join(', ');
 }
 
-export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValidate }: Props) {
+export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValidate, onValidChange }: Props) {
   const { t } = useTranslation();
   const [name, setName] = useState(rule?.name || '');
   const [pattern, setPattern] = useState(patternToLines(rule?.pattern || ''));
@@ -74,8 +75,12 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
 
   const isValid = name && pattern && !patternError && !validating;
 
+  useEffect(() => {
+    onValidChange?.(!!isValid);
+  }, [isValid, onValidChange]);
+
   return (
-    <form onSubmit={handleSubmit} className="bg-neutral-100 dark:bg-neutral-900/50 rounded-lg p-4 space-y-4">
+    <form id="rule-editor-form" onSubmit={handleSubmit} className="bg-neutral-100 dark:bg-neutral-900/50 rounded-lg p-4 space-y-4">
       <h3 className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
         {rule ? t('rules.editRule') : t('rules.addRule')}
       </h3>
@@ -149,14 +154,6 @@ export function RuleEditor({ rule, existingPriorities, onSave, onCancel, onValid
         </div>
       </div>
 
-      <div className="flex gap-2 pt-2">
-        <button type="submit" disabled={!isValid} className="btn btn-primary">
-          {t('rules.form.save')}
-        </button>
-        <button type="button" onClick={onCancel} className="btn btn-ghost">
-          {t('rules.form.cancel')}
-        </button>
-      </div>
     </form>
   );
 }

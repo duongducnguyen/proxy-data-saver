@@ -393,3 +393,11 @@ Nếu port đã được dùng (Docker, etc.), app sẽ fail. User cần đổi 
   - ByteCounterStream được dùng trong tunnelDirect() và tunnelViaProxy()
   - Thêm debug logging cho IPC traffic forwarding
   - Tạo thumbnails cho CodeCanyon marketplace (resources/thumbnail-*.png)
+- **v1.2.0**: Rule UX Improvements, Update Checker & Installer Fix
+  - Fix: Rules form scrollable — nút không còn bị ẩn khi cửa sổ nhỏ
+  - Fix: Nút "Thêm quy tắc" / "Lưu quy tắc" + "Hủy" chuyển lên header, luôn hiển thị
+  - Remove: Bỏ tính năng Test Rules (RuleTester component)
+  - Fix: NSIS installer tự kill process đang chạy trước khi cài phiên bản mới (build/installer.nsh)
+  - Feat: Update checker — kiểm tra phiên bản mới khi khởi động, hiện banner thông báo
+  - update-checker.ts fetch API woware.net, so sánh version với app.getVersion()
+  - Banner hiện sau 3 giây, có nút "Tải về" link tới trang sản phẩm và nút đóng

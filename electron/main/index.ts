@@ -15,6 +15,7 @@ import { registerIpcHandlers, updateWindowReference, cleanupIpcHandlers } from '
 import { configStore } from './config-store';
 import { proxyServer } from './proxy-server';
 import { statsManager } from './stats-manager';
+import { checkForUpdate } from './update-checker';
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -64,6 +65,14 @@ function createWindow(): void {
   // Show window only when ready (CSS loaded, no white flash)
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
+
+    // Check for updates in background after 3 seconds
+    setTimeout(async () => {
+      const info = await checkForUpdate();
+      if (info?.hasUpdate && mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('update:available', info);
+      }
+    }, 3000);
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {

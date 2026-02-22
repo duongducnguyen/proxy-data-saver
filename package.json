@@ -54,7 +54,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Proxy Data Saver"
+      "shortcutName": "Proxy Data Saver",
+      "include": "build/installer.nsh"
     }
   }
 }
