@@ -21,6 +21,7 @@ export interface ProxyConfig {
   startPort: number;
   defaultAction: 'proxy' | 'direct';
   autoStart: boolean;
+  startWithWindows: boolean;
   proxyList: string; // Raw text: user:pass:host:port per line
 }
 
@@ -84,6 +85,7 @@ export const DEFAULT_CONFIG: AppConfig = {
     startPort: 8080,
     defaultAction: 'proxy',
     autoStart: false,
+    startWithWindows: false,
     proxyList: ''
   },
   rules: [

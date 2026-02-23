@@ -27,8 +27,8 @@ export const en = {
     active: 'active'
   },
   proxy: {
-    title: 'Proxy List',
-    titleActive: 'Active Proxies',
+    title: 'HTTP Proxy List',
+    titleActive: 'Active HTTP Proxies',
     status: {
       running: 'Running',
       stopped: 'Stopped',
@@ -36,7 +36,7 @@ export const en = {
       failed: 'Failed'
     },
     proxyCount: 'proxy(s)',
-    placeholder: `Enter proxies, one per line:
+    placeholder: `Enter HTTP proxies, one per line:
 username:password:hostname:port
 
 Examples:
@@ -45,7 +45,7 @@ user2:pass2:us-pr.lunaproxy.net:23502
 
 Or without auth:
 hostname:port`,
-    formatHint: 'Format: username:password:host:port or host:port',
+    formatHint: 'HTTP proxy only — Format: username:password:host:port or host:port',
     settings: {
       startPort: 'Start Port',
       portsRange: 'Ports',
@@ -53,7 +53,9 @@ hostname:port`,
       useProxy: 'Use Proxy',
       directConnection: 'Direct Connection',
       whenNoRule: 'When no rule matches',
-      autoStart: 'Auto-start on launch'
+      autoStart: 'Auto-start on launch',
+      startWithWindows: 'Start with Windows',
+      startWithWindowsHint: 'Launch app and start proxy at Windows startup'
     },
     actions: {
       save: 'Save',

@@ -27,8 +27,8 @@ export const vi = {
     active: 'hoạt động'
   },
   proxy: {
-    title: 'Danh sách Proxy',
-    titleActive: 'Proxy đang chạy',
+    title: 'Danh sách HTTP Proxy',
+    titleActive: 'HTTP Proxy đang chạy',
     status: {
       running: 'Đang chạy',
       stopped: 'Đã dừng',
@@ -36,7 +36,7 @@ export const vi = {
       failed: 'Lỗi'
     },
     proxyCount: 'proxy',
-    placeholder: `Nhập proxy, mỗi dòng một proxy:
+    placeholder: `Nhập HTTP proxy, mỗi dòng một proxy:
 username:password:hostname:port
 
 Ví dụ:
@@ -45,7 +45,7 @@ user2:pass2:us-pr.lunaproxy.net:23502
 
 Hoặc không có auth:
 hostname:port`,
-    formatHint: 'Định dạng: username:password:host:port hoặc host:port',
+    formatHint: 'Chỉ hỗ trợ HTTP proxy — Định dạng: username:password:host:port hoặc host:port',
     settings: {
       startPort: 'Port bắt đầu',
       portsRange: 'Ports',
@@ -53,7 +53,9 @@ hostname:port`,
       useProxy: 'Dùng Proxy',
       directConnection: 'Kết nối trực tiếp',
       whenNoRule: 'Khi không có quy tắc nào khớp',
-      autoStart: 'Tự động chạy khi khởi động'
+      autoStart: 'Tự động chạy khi khởi động',
+      startWithWindows: 'Khởi động cùng Windows',
+      startWithWindowsHint: 'Tự mở app và start proxy khi khởi động Windows'
     },
     actions: {
       save: 'Lưu',

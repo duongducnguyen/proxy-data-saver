@@ -66,6 +66,15 @@ function createWindow(): void {
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
 
+    // Auto-start proxy if startWithWindows is enabled and proxy list is configured
+    const config = configStore.getProxyConfig();
+    if (config.startWithWindows && config.proxyList.trim()) {
+      const rules = configStore.getRules();
+      proxyServer.start(config, rules).catch(err => {
+        console.error('Auto-start proxy failed:', err);
+      });
+    }
+
     // Check for updates in background after 3 seconds
     setTimeout(async () => {
       const info = await checkForUpdate();

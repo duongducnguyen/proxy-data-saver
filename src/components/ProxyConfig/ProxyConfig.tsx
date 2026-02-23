@@ -21,6 +21,7 @@ interface ProxyConfig {
   startPort: number;
   defaultAction: 'proxy' | 'direct';
   autoStart: boolean;
+  startWithWindows: boolean;
   proxyList: string;
 }
 
@@ -280,6 +281,21 @@ export function ProxyConfig({
           <p className="text-xs text-neutral-500 dark:text-neutral-600 mt-1.5">
             {t('proxy.settings.whenNoRule')}
           </p>
+        </div>
+
+        <div>
+          <label className="label">{t('proxy.settings.startWithWindows')}</label>
+          <label className="flex items-center gap-2 cursor-pointer mt-2">
+            <input
+              type="checkbox"
+              checked={localConfig.startWithWindows ?? false}
+              onChange={(e) => handleChange('startWithWindows', e.target.checked)}
+              className="w-4 h-4 rounded accent-indigo-600"
+            />
+            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+              {t('proxy.settings.startWithWindowsHint')}
+            </span>
+          </label>
         </div>
 
       </div>

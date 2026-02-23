@@ -1,4 +1,4 @@
-import { ipcMain, BrowserWindow } from 'electron';
+import { ipcMain, BrowserWindow, app } from 'electron';
 import { proxyServer } from './proxy-server';
 import { configStore } from './config-store';
 import { Rule, ProxyConfig } from './types';
@@ -54,6 +54,9 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     const updated = configStore.setProxyConfig(config);
     if (proxyServer.getStatus().running) {
       proxyServer.updateDefaultAction(updated.defaultAction);
+    }
+    if ('startWithWindows' in config) {
+      app.setLoginItemSettings({ openAtLogin: updated.startWithWindows });
     }
     return updated;
   });
